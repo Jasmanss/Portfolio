@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Optional: smooth scrolling */
+html { scroll-behavior: smooth; }
+
+/* Optional: nice selection */
+::selection { background: #111827; color: white; }
+
+/* Simple container utility */
+@layer utilities {
+  .container-xl { @apply max-w-6xl mx-auto px-4; }
+}
