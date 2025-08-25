@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { motion } from 'framer-motion'
-// import Spline from '@splinetool/react-spline'
+import Spline from '@splinetool/react-spline'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -103,11 +103,11 @@ export default function PortfolioPage() {
 
   return (
     <div className="min-h-screen bg-white text-black selection:bg-gray-900 selection:text-white relative">
-      {/* Spline Background - temporarily disabled */}
-      {/* <div className="fixed inset-0 z-0">
+      {/* Spline Background */}
+      <div className="fixed inset-0 z-0">
         <div className="absolute inset-0 backdrop-blur-sm bg-white/30"></div>
         <Spline scene="https://prod.spline.design/JEnYR9WO7qiyXh5j/scene.splinecode" />
-      </div> */}
+      </div>
       
       {/* nav */}
       <header className="fixed top-0 inset-x-0 z-50 backdrop-blur border-b border-gray-200/60 bg-white/70">
@@ -148,7 +148,7 @@ export default function PortfolioPage() {
                 Turning Vision Into Reality.
               </h1>
               <p className="mt-5 text-black max-w-2xl">
-              I'm a CS student at Oakland University focused on Artificial Intelligence — building practical projects with real-world impact, clean UI/UX, and solid engineering.
+              I’m a CS student at Oakland University focused on Artificial Intelligence — building practical projects with real-world impact, clean UI/UX, and solid engineering.
               </p>
               <div className="mt-8 flex items-center md:justify-start justify-center gap-3">
                 <a href="#projects"><button className="rounded-2xl bg-gray-900 text-white hover:bg-gray-800 px-4 py-2 text-sm">View projects</button></a>
