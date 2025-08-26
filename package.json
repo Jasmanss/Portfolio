@@ -1,5 +1,6 @@
 {
   "name": "new-portfolio",
+  "homepage": "https://jasman047.github.io/Portfolio/",
   "version": "1.0.0",
   "type": "module",
   "description": "A modern portfolio website",
@@ -8,7 +9,9 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "predeploy": "npm run build",   --- IGNORE ---
+    "deploy": "gh-pages -d dist"     --- IGNORE ---
   },
   "keywords": [
     "portfolio",
@@ -29,6 +32,7 @@
   "dependencies": {
     "@splinetool/react-spline": "^4.1.0",
     "framer-motion": "^12.23.12",
+    "gh-pages": "^6.3.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   }
