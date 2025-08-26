@@ -118,7 +118,7 @@ export default function PortfolioPage() {
             <a className="hover:text-black/70 transition" href="#experience">Experience</a>
             <a className="hover:text-black/70 transition" href="#skills">Skills</a>
             <a className="hover:text-black/70 transition" href="#contact">Contact</a>
-            <a href="/resume.pdf" className="rounded-full border border-gray-300 px-3 py-1 hover:bg-gray-50" download>
+            <a href="./resume.pdf" className="rounded-full border border-gray-300 px-3 py-1 hover:bg-gray-50" download>
               Resume
             </a>
           </nav>
@@ -153,7 +153,7 @@ export default function PortfolioPage() {
               <div className="mt-8 flex items-center md:justify-start justify-center gap-3">
                 <a href="#projects"><button className="rounded-2xl bg-gray-900 text-white hover:bg-gray-800 px-4 py-2 text-sm">View projects</button></a>
                 <a href="#contact"><button className="rounded-2xl border border-gray-300 text-gray-900 hover:bg-gray-50 px-4 py-2 text-sm">Contact</button></a>
-                <a href="/resume.pdf" download>
+                <a href="./resume.pdf" download>
                   <button className="rounded-2xl border border-gray-300 text-gray-900 hover:bg-gray-50 px-4 py-2 text-sm">
                     Download résumé
                   </button>
@@ -168,7 +168,7 @@ export default function PortfolioPage() {
             {/* portrait */}
             <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7 }} className="flex justify-center">
               <img
-                src="/jasman1.jpg"
+                src="./jasman1.jpg"
                 alt="Jasman Sidhu"
                 className="relative w-full max-w-md aspect-[3/4] object-cover rounded-[2rem] shadow-2xl"
               />
@@ -200,13 +200,13 @@ export default function PortfolioPage() {
                 <article className="border border-gray-200 bg-white/90 backdrop-blur-sm rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition">
                   <div className="h-56 bg-gray-100 flex items-center justify-center text-gray-400 text-sm overflow-hidden">
                     {p.title.includes('HAIRSTYL') && (
-                      <img src="/hairstyl.jpg" alt="HAIRSTYL Project" className="w-full h-full object-cover" />
+                      <img src="./hairstyl.jpg" alt="HAIRSTYL Project" className="w-full h-full object-cover" />
                     )}
                     {p.title.includes('Aroma AI') && (
-                      <img src="/aromaai.png" alt="Aroma AI Project" className="w-full h-full object-cover" />
+                      <img src="./aromaai.png" alt="Aroma AI Project" className="w-full h-full object-cover" />
                     )}
                     {p.title.includes('Health AI') && (
-                      <img src="/healthai.png" alt="Health AI Project" className="w-full h-full object-cover" />
+                      <img src="./healthai.png" alt="Health AI Project" className="w-full h-full object-cover" />
                     )}
                     {p.title.includes('Coming Soon') && (
                       <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
