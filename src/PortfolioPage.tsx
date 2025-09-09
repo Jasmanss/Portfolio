@@ -118,7 +118,7 @@ export default function PortfolioPage() {
             <a className="hover:text-black/70 transition" href="#experience">Experience</a>
             <a className="hover:text-black/70 transition" href="#skills">Skills</a>
             <a className="hover:text-black/70 transition" href="#contact">Contact</a>
-            <a href="./resume.pdf" className="rounded-full border border-gray-300 px-3 py-1 hover:bg-gray-50" download>
+            <a href="/JasmanResume.pdf" className="rounded-full border border-gray-300 px-3 py-1 hover:bg-gray-50" download>
               Resume
             </a>
           </nav>
@@ -153,7 +153,7 @@ export default function PortfolioPage() {
               <div className="mt-8 flex items-center md:justify-start justify-center gap-3">
                 <a href="#projects"><button className="rounded-2xl bg-gray-900 text-white hover:bg-gray-800 px-4 py-2 text-sm">View projects</button></a>
                 <a href="#contact"><button className="rounded-2xl border border-gray-300 text-gray-900 hover:bg-gray-50 px-4 py-2 text-sm">Contact</button></a>
-                <a href="./resume.pdf" download>
+                <a href="/JasmanResume.pdf" download>
                   <button className="rounded-2xl border border-gray-300 text-gray-900 hover:bg-gray-50 px-4 py-2 text-sm">
                     Download résumé
                   </button>
