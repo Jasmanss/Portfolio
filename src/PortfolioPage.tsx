@@ -54,10 +54,11 @@ const EXPERIENCE = [
     org: 'Vengeance Intelligence LLC',
     time: 'May 2025 — Present',
     bullets: [
-      'Co-founded a startup delivering AI-driven mobile apps for personal self-improvement, setting product vision and frontend strategy',
-      'Developed HAIRSTYL’s frontend using Swift & SwiftUI, enabling image uploads + AI-powered dashboards, which streamlined grooming routine personalization for users',
-      'Implemented core user flows (onboarding, image capture, results dashboard, progress graphs), reducing friction and improving engagement across the app',
-      'Achieved 600+ active users by driving HAIRSTYL’s growth through intuitive UI design and repeatedly feature improvements',
+      'Co-founded startup building AI-powered grooming app; led frontend development and product strategy.',
+      'Built HAIRSTYL iOS app in Swift/SwiftUI with image upload and AI analysis generating personalized hair rotuines.',
+      'Implemented user flows (onboarding, capture, results, tracking), reducing drop-off by 30% and increasing engagement.',
+      'Scaled to 150+ active users in 4 months through iterative UI improvements and feature releases.',
+      'Worked with backend developer to integrate AI processing pipeline, achieving 2 second analysis times while maintaining 80%+ accuracy rates across the app.',
     ],
   },
 ]
@@ -155,7 +156,7 @@ export default function PortfolioPage() {
                 <a href="#contact"><button className="rounded-2xl border border-gray-300 text-gray-900 hover:bg-gray-50 px-4 py-2 text-sm">Contact</button></a>
                 <a href="/JasmanResume.pdf" download>
                   <button className="rounded-2xl border border-gray-300 text-gray-900 hover:bg-gray-50 px-4 py-2 text-sm">
-                    Download résumé
+                    Download résume
                   </button>
                 </a>
               </div>
