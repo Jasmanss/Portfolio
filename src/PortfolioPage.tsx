@@ -23,14 +23,14 @@ const PROJECTS = [
     description:
       'Analyzes hair, beard, and eyebrows to generate routines. Built with Swift/SwiftUI and OpenAI.',
     tags: ['Swift', 'OpenAI'],
-    link: 'https://github.com/Jasman047/HairStyl',
+    link: 'https://github.com/Jasmanss/HairStyl1',
   },
   {
     title: 'Aroma AI — Fragrance Recommender',
     description:
       'Image-to-scent and quiz-based suggestions using Python + OpenCV. Won Best UI/UX at GrizzHacks 7.',
     tags: ['JavaScript', 'Python', 'Node.js'],
-    link: 'https://github.com/Jasman047/AromaAI',
+    link: 'https://github.com/Jasmanss/AromaAI',
     demo: 'https://jasmanss.github.io/AromaAI/',
   },
   {
@@ -38,14 +38,15 @@ const PROJECTS = [
     description:
       'Tracks workouts, calories, and wellness with real-time charts and a context-aware chatbot.',
     tags: ['MongoDB', 'JavaScript',],
-    link: 'https://github.com/Jasman047/HealthAI',
+    link: 'https://github.com/Jasmanss/HealthAI',
   },
   {
-    title: 'Coming Soon!',
+    title: 'Imperium — AI Remote Mac Control',
     description:
-      'Coming Soon!',
-    tags: ['Coming Soon!'],
-    link: 'https://github.com/Jasman047',
+      'Text your Mac from your phone in plain English — Claude interprets commands to open apps, send messages, play music, and run git operations. Built with Python, FastAPI, and AppleScript.',
+    tags: ['Python', 'FastAPI', 'Claude API'],
+    link: 'https://github.com/Jasmanss/Imperium',
+    demo: 'https://youtu.be/jEpbP-iGQTk',
   },
 ]
 
@@ -162,7 +163,7 @@ export default function PortfolioPage() {
                 </a>
               </div>
               <div className="mt-5 flex items-center gap-4 justify-center md:justify-start text-sm text-black">
-                <a className="hover:text-black underline underline-offset-4" href="https://github.com/Jasman047" target="_blank" rel="noreferrer">GitHub</a>
+                <a className="hover:text-black underline underline-offset-4" href="https://github.com/Jasmanss" target="_blank" rel="noreferrer">GitHub</a>
                 <span>•</span>
                 <a className="hover:text-black underline underline-offset-4" href="https://www.linkedin.com/in/jasmanpreetsinghs/" target="_blank" rel="noreferrer">LinkedIn</a>
               </div>
@@ -207,10 +208,8 @@ export default function PortfolioPage() {
                     {p.title.includes('Health AI') && (
                       <img src="./healthai.png" alt="Health AI Project" className="w-full h-full object-cover" />
                     )}
-                    {p.title.includes('Coming Soon') && (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-                        Coming Soon
-                      </div>
+                    {p.title.includes('Imperium') && (
+                      <img src="https://img.youtube.com/vi/jEpbP-iGQTk/maxresdefault.jpg" alt="Imperium Project" className="w-full h-full object-cover" />
                     )}
                   </div>
                   <div className="p-6">
@@ -326,7 +325,7 @@ export default function PortfolioPage() {
             <p>© {new Date().getFullYear()} Jasman Sidhu. All rights reserved.</p>
             <div className="flex items-center gap-4">
               <a href="mailto:jasmansidhu974@gmail.com" className="hover:text-black">jasmansidhu974@gmail.com</a>
-              <a href="https://github.com/Jasman047" target="_blank" rel="noreferrer" className="hover:text-black">GitHub</a>
+              <a href="https://github.com/Jasmanss" target="_blank" rel="noreferrer" className="hover:text-black">GitHub</a>
               <a href="https://www.linkedin.com/in/jasmanpreetsinghs/" target="_blank" rel="noreferrer" className="hover:text-black">LinkedIn</a>
             </div>
         </div>
