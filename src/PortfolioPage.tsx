@@ -19,14 +19,14 @@ const SectionTitle = ({ kicker, title, subtitle }: { kicker: string; title: stri
 
 const PROJECTS = [
   {
-    title: 'HAIRSTYL — AI Grooming App',
+    title: 'HAIRSTYL: AI Grooming App',
     description:
       'Analyzes hair, beard, and eyebrows to generate routines. Built with Swift/SwiftUI and OpenAI.',
     tags: ['Swift', 'OpenAI'],
     link: 'https://github.com/Jasmanss/HairStyl1',
   },
   {
-    title: 'Aroma AI — Fragrance Recommender',
+    title: 'Aroma AI: Fragrance Recommender',
     description:
       'Image-to-scent and quiz-based suggestions using Python + OpenCV. Won Best UI/UX at GrizzHacks 7.',
     tags: ['JavaScript', 'Python', 'Node.js'],
@@ -34,16 +34,16 @@ const PROJECTS = [
     demo: 'https://jasmanss.github.io/AromaAI/',
   },
   {
-    title: 'Health AI — Fitness Dashboard',
+    title: 'Health AI: Fitness Dashboard',
     description:
       'Tracks workouts, calories, and wellness with real-time charts and a context-aware chatbot.',
     tags: ['MongoDB', 'JavaScript',],
     link: 'https://github.com/Jasmanss/HealthAI',
   },
   {
-    title: 'Imperium — AI Remote Mac Control',
+    title: 'Imperium: AI Remote Mac Control',
     description:
-      'Text your Mac from your phone in plain English — Claude interprets commands to open apps, send messages, play music, and run git operations. Built with Python, FastAPI, and AppleScript.',
+      'Control your Mac from your phone with plain English. Claude interprets commands to open apps, send messages, and run git operations.',
     tags: ['Python', 'FastAPI', 'Claude API'],
     link: 'https://github.com/Jasmanss/Imperium',
     demo: 'https://youtu.be/jEpbP-iGQTk',
@@ -54,7 +54,7 @@ const EXPERIENCE = [
   {
     role: 'Frontend Developer & Co-Founder',
     org: 'Vengeance Intelligence LLC',
-    time: 'May 2025 — Present',
+    time: 'May 2025 to Present',
     bullets: [
       'Co-founded startup building AI-powered grooming app; led frontend development and product strategy.',
       'Built HAIRSTYL iOS app in Swift/SwiftUI with image upload and AI analysis generating personalized hair rotuines.',
@@ -84,7 +84,7 @@ export default function PortfolioPage() {
     const name = (form.elements.namedItem('name') as HTMLInputElement)?.value || '';
     const email = (form.elements.namedItem('email') as HTMLInputElement)?.value || '';
     const message = (form.elements.namedItem('message') as HTMLTextAreaElement)?.value || '';
-    const subject = encodeURIComponent(`Portfolio Contact — ${name}`);
+    const subject = encodeURIComponent(`Portfolio Contact: ${name}`);
     const body = encodeURIComponent(`From: ${name} <${email}>\n\n${message}`);
     window.location.href = `mailto:jasmansidhu974@gmail.com?subject=${subject}&body=${body}`;
   }
@@ -144,28 +144,25 @@ export default function PortfolioPage() {
         <div className="container-xl">
           <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="grid md:grid-cols-2 gap-10 items-center">
             <div className="text-center md:text-left">
-              <p className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gray-200 bg-white text-xs text-black">
-                <span className="size-1.5 rounded-full bg-green-500" /> Available for internships
-              </p>
               <h1 className="mt-6 text-4xl md:text-7xl font-semibold tracking-tight">
                 Turning Vision Into Reality.
               </h1>
               <p className="mt-5 text-black max-w-2xl">
-              I’m a CS student at Oakland University focused on Artificial Intelligence — building practical projects with real-world impact, clean UI/UX, and solid engineering.
+              I'm a CS student at Oakland University focused on Artificial Intelligence, building practical projects with real-world impact, clean UI/UX, and solid engineering.
               </p>
               <div className="mt-8 flex items-center md:justify-start justify-center gap-3">
                 <a href="#projects"><button className="rounded-2xl bg-gray-900 text-white hover:bg-gray-800 px-4 py-2 text-sm">View projects</button></a>
                 <a href="#contact"><button className="rounded-2xl border border-gray-300 text-gray-900 hover:bg-gray-50 px-4 py-2 text-sm">Contact</button></a>
                 <a href="/JasmanResume.pdf" download>
                   <button className="rounded-2xl border border-gray-300 text-gray-900 hover:bg-gray-50 px-4 py-2 text-sm">
-                    Download résume
+                    Download resume
                   </button>
                 </a>
               </div>
               <div className="mt-5 flex items-center gap-4 justify-center md:justify-start text-sm text-black">
                 <a className="hover:text-black underline underline-offset-4" href="https://github.com/Jasmanss" target="_blank" rel="noreferrer">GitHub</a>
                 <span>•</span>
-                <a className="hover:text-black underline underline-offset-4" href="https://www.linkedin.com/in/jasmanpreetsinghs/" target="_blank" rel="noreferrer">LinkedIn</a>
+                <a className="hover:text-black underline underline-offset-4" href="https://www.linkedin.com/in/jasmanss/" target="_blank" rel="noreferrer">LinkedIn</a>
               </div>
             </div>
             {/* portrait */}
@@ -189,7 +186,7 @@ export default function PortfolioPage() {
             initial="hidden"
             whileInView="show"
             viewport={{ once: true, amount: 0.2 }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-8"
+            className="grid grid-cols-1 lg:grid-cols-2 auto-rows-fr gap-8"
           >
             {PROJECTS.map((p, i) => (
               <motion.div
@@ -197,7 +194,7 @@ export default function PortfolioPage() {
                 variants={fadeUp}
                 className="block group"
               >
-                <article className="border border-gray-200 bg-white/90 backdrop-blur-sm rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition">
+                <article className="h-full flex flex-col border border-gray-200 bg-white/90 backdrop-blur-sm rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition">
                   <div className="h-56 bg-gray-100 flex items-center justify-center text-gray-400 text-sm overflow-hidden">
                     {p.title.includes('HAIRSTYL') && (
                       <img src="./hairstyl.jpg" alt="HAIRSTYL Project" className="w-full h-full object-cover" />
@@ -209,10 +206,10 @@ export default function PortfolioPage() {
                       <img src="./healthai.png" alt="Health AI Project" className="w-full h-full object-cover" />
                     )}
                     {p.title.includes('Imperium') && (
-                      <img src="https://img.youtube.com/vi/jEpbP-iGQTk/maxresdefault.jpg" alt="Imperium Project" className="w-full h-full object-cover" />
+                      <img src="./imperium.png" alt="Imperium Project" className="w-full h-full object-cover" />
                     )}
                   </div>
-                  <div className="p-6">
+                  <div className="p-6 flex-1 flex flex-col">
                     <header className="flex items-start justify-between gap-4">
                       <h3 className="text-xl font-semibold text-black">
                         {p.title}
@@ -229,9 +226,9 @@ export default function PortfolioPage() {
                         </span>
                       ))}
                     </div>
-                    <div className="mt-4 flex gap-3">
-                      <a 
-                        href={p.link} 
+                    <div className="mt-auto pt-4 flex gap-3">
+                      <a
+                        href={p.link}
                         target="_blank" 
                         rel="noreferrer"
                         className="flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-sm text-gray-700 transition-colors"
@@ -326,7 +323,7 @@ export default function PortfolioPage() {
             <div className="flex items-center gap-4">
               <a href="mailto:jasmansidhu974@gmail.com" className="hover:text-black">jasmansidhu974@gmail.com</a>
               <a href="https://github.com/Jasmanss" target="_blank" rel="noreferrer" className="hover:text-black">GitHub</a>
-              <a href="https://www.linkedin.com/in/jasmanpreetsinghs/" target="_blank" rel="noreferrer" className="hover:text-black">LinkedIn</a>
+              <a href="https://www.linkedin.com/in/jasmanss/" target="_blank" rel="noreferrer" className="hover:text-black">LinkedIn</a>
             </div>
         </div>
       </footer>
