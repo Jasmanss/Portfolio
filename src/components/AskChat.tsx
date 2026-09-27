@@ -61,16 +61,15 @@ export default function AskChat() {
   }
 
   return (
-    <div className="flex h-full flex-col p-3 md:p-4">
-      <div ref={log} className="flex-1 space-y-4 overflow-y-auto pr-1 min-h-[180px]" aria-live="polite">
+    <div className="flex h-full flex-col border border-line bg-black/40 p-4 normal-case">
+      <div ref={log} className="min-h-[200px] flex-1 space-y-3 overflow-y-auto pr-1 text-[12px] leading-relaxed" aria-live="polite">
+        <p className="text-dim">jasman@portfolio ~ % ask --about jasman</p>
         {turns.length === 0 ? (
           <div>
-            <p className="type-label">Ask the curator</p>
-            <p className="mt-1 text-[clamp(1.6rem,2.4vw,2.2rem)] italic leading-tight">Questions about the collection?</p>
-            <p className="mt-2 text-ink/70">Ask anything about Jasman’s work. Answers come from what’s on this site.</p>
-            <div className="mt-5 flex flex-wrap gap-2">
+            <p className="text-bone/80">Answers come only from what's on this site. Try one:</p>
+            <div className="mt-3 flex flex-wrap gap-2">
               {SUGGESTIONS.map((s) => (
-                <button key={s} type="button" onClick={() => ask(s)} className="border border-rule px-3 py-1 text-[16px] italic hover:border-ink hover:bg-ink hover:text-paper transition-colors">
+                <button key={s} type="button" onClick={() => ask(s)} className="border border-line px-2 py-1 text-bone/80 transition-colors hover:border-flame hover:text-flame">
                   {s}
                 </button>
               ))}
@@ -78,33 +77,27 @@ export default function AskChat() {
           </div>
         ) : (
           turns.map((t, i) => (
-            <p
-              key={i}
-              className={
-                t.role === 'user'
-                  ? 'ml-auto w-fit max-w-[85%] bg-red px-3 py-2 text-paper italic'
-                  : 'max-w-[92%] leading-relaxed text-ink/85'
-              }
-            >
-              {t.text || <span className="inline-block animate-pulse text-mute">thinking…</span>}
+            <p key={i} className={t.role === 'user' ? 'text-flame' : 'text-bone/90'}>
+              {t.role === 'user' ? '> ' : ''}
+              {t.text || <span className="animate-pulse text-dim">thinking…</span>}
             </p>
           ))
         )}
       </div>
-      <form onSubmit={submit} className="mt-3 flex gap-2 border-t border-rule pt-3">
-        <label htmlFor="ask" className="sr-only">
-          Your question
+      <form onSubmit={submit} className="mt-3 flex items-center gap-2 border-t border-line pt-3 text-[12px]">
+        <label htmlFor="ask" className="text-flame">
+          &gt;
         </label>
         <input
           id="ask"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           maxLength={500}
-          placeholder="Ask about a project, a job, a skill…"
-          className="min-w-0 flex-1 border-b border-ink bg-transparent py-2 placeholder:text-mute focus:border-red outline-none"
+          placeholder="ask about a project, a job, a skill"
+          className="min-w-0 flex-1 bg-transparent text-bone caret-flame outline-none placeholder:text-dim"
         />
-        <button type="submit" disabled={busy || !draft.trim()} className="type-caps px-2 text-red hover:underline disabled:opacity-30">
-          Ask
+        <button type="submit" disabled={busy || !draft.trim()} className="uppercase text-bone hover:text-flame disabled:opacity-30">
+          Enter ↵
         </button>
       </form>
     </div>

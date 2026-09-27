@@ -81,15 +81,15 @@ export default function Cursor() {
       >
         <div
           className={`flex items-center justify-center rounded-full transition-[width,height,background-color,border-color] duration-300 ease-out ${
-            labelled ? 'text-ink' : 'border border-white/80 mix-blend-difference'
+            labelled ? 'text-void' : 'border border-white/80 mix-blend-difference'
           }`}
           style={{
             width: size,
             height: size,
-            backgroundColor: labelled ? (mode.color ?? '#F3DC8E') : 'transparent',
+            backgroundColor: labelled ? (mode.color ?? '#E8E6DF') : 'transparent',
           }}
         >
-          {labelled && <span className="font-caps text-[11px] font-bold uppercase tracking-[0.12em]">{mode.label ?? (mode.kind === 'drag' ? 'Throw' : 'View')}</span>}
+          {labelled && <span className="font-mono text-[10px] font-semibold uppercase">{mode.label ?? (mode.kind === 'drag' ? 'Throw' : 'View')}</span>}
         </div>
       </div>
       <div

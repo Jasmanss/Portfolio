@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import Shape from './Shapes'
-import type { ShapeKind } from './Shapes'
 import { gsap, prefersReducedMotion } from '../lib/motion'
 
 const CODE = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a']
-const KINDS: ShapeKind[] = ['flower', 'asterisk', 'ring', 'squiggle', 'capsule', 'diamond']
+const GLYPHS = '*#%&@+=<>/{}[]$'
 
-// ↑ ↑ ↓ ↓ ← → ← → B A rains shapes over the page.
+// ↑ ↑ ↓ ↓ ← → ← → B A rains glowing characters over the page.
 export default function Konami() {
   const [party, setParty] = useState(0)
   const layer = useRef<HTMLDivElement>(null)
@@ -58,10 +56,12 @@ export default function Konami() {
     <div ref={layer} aria-live="polite" className="pointer-events-none fixed inset-0 z-[150] overflow-hidden">
       {Array.from({ length: 36 }, (_, i) => (
         <div key={i} data-piece className="absolute left-0 top-0">
-          <Shape kind={KINDS[i % KINDS.length]} size={40 + (i % 5) * 16} />
+          <span className="font-mono font-bold text-flame" style={{ fontSize: 18 + (i % 5) * 10 }}>
+            {GLYPHS[i % GLYPHS.length]}
+          </span>
         </div>
       ))}
-      <p data-toast className="gilt absolute bottom-16 left-1/2 -translate-x-1/2 whitespace-nowrap px-6 py-3 font-serif text-[clamp(1.4rem,3vw,2.4rem)] italic text-ink shadow-[0_10px_20px_rgba(0,0,0,0.6)]">
+      <p data-toast className="absolute bottom-16 left-1/2 -translate-x-1/2 whitespace-nowrap border border-flame bg-void px-5 py-3 text-flame">
         Cheat code accepted. You found the fun part.
       </p>
     </div>
