@@ -17,28 +17,33 @@ async function loadActivity(): Promise<Activity[]> {
     type: string
     created_at: string
     repo: { name: string }
-    payload: { commits?: { message: string }[]; ref_type?: string; action?: string }
+    payload: { ref?: string; ref_type?: string; action?: string }
   }[]
-  const lines = events
-    .map((e): Activity | null => {
-      const repo = e.repo.name.split('/').pop()!
-      switch (e.type) {
-        case 'PushEvent': {
-          const msg = e.payload.commits?.[e.payload.commits.length - 1]?.message.split('\n')[0]
-          return msg ? { id: e.id, text: msg, repo, at: e.created_at } : null
-        }
-        case 'CreateEvent':
-          return e.payload.ref_type === 'repository' ? { id: e.id, text: 'Started a new repo', repo, at: e.created_at } : null
-        case 'PullRequestEvent':
-          return { id: e.id, text: `${e.payload.action === 'closed' ? 'Merged' : 'Opened'} a pull request`, repo, at: e.created_at }
-        default:
-          return null
+  // GitHub no longer includes commit messages in public push events, so pushes are summarised and
+  // back-to-back pushes to the same branch are collapsed into one line.
+  const lines: (Activity & { pushes?: number; key?: string })[] = []
+  for (const e of events) {
+    const repo = e.repo.name.split('/').pop()!
+    const branch = e.payload.ref?.replace('refs/heads/', '')
+    const last = lines[lines.length - 1]
+    if (e.type === 'PushEvent') {
+      const key = `${repo}@${branch}`
+      if (last?.key === key) {
+        last.pushes! += 1
+        last.text = `Pushed ${last.pushes} times to ${branch}`
+      } else {
+        lines.push({ id: e.id, repo, at: e.created_at, text: `Pushed to ${branch}`, pushes: 1, key })
       }
-    })
-    .filter((a): a is Activity => a !== null)
-    .slice(0, 4)
-  sessionStorage.setItem(CACHE_KEY, JSON.stringify(lines))
-  return lines
+    } else if (e.type === 'CreateEvent' && e.payload.ref_type === 'repository') {
+      lines.push({ id: e.id, repo, at: e.created_at, text: 'Started a new repo' })
+    } else if (e.type === 'PullRequestEvent') {
+      lines.push({ id: e.id, repo, at: e.created_at, text: `${e.payload.action === 'closed' ? 'Closed' : 'Opened'} a pull request` })
+    }
+    if (lines.length === 5) break
+  }
+  const recent = lines.slice(0, 4).map(({ id, text, repo, at }) => ({ id, text, repo, at }))
+  sessionStorage.setItem(CACHE_KEY, JSON.stringify(recent))
+  return recent
 }
 
 const ago = (iso: string) => {
