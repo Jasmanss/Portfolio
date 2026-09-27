@@ -61,7 +61,7 @@ export default function Konami() {
           <Shape kind={KINDS[i % KINDS.length]} size={40 + (i % 5) * 16} />
         </div>
       ))}
-      <p data-toast className="absolute bottom-8 left-1/2 -translate-x-1/2 sticker bg-green text-xl font-display font-semibold">
+      <p data-toast className="absolute bottom-16 left-1/2 -translate-x-1/2 whitespace-nowrap bg-ink px-5 py-3 type-poster text-red text-[clamp(1.5rem,3vw,2.5rem)]">
         Cheat code accepted. You found the fun part.
       </p>
     </div>

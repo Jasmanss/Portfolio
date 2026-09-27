@@ -9,14 +9,14 @@ export default function ProjectLinks({ project, className = '' }: { project: Pro
   ].filter(Boolean) as { href: string; label: string; accent: boolean }[]
 
   return (
-    <p className={`flex flex-wrap gap-x-5 gap-y-2 type-label ${className}`}>
+    <p className={`flex flex-wrap gap-x-4 gap-y-1 ${className}`}>
       {links.map((l) => (
         <a
           key={l.label}
           href={l.href}
           target="_blank"
           rel="noreferrer"
-          className={`link-underline ${l.accent ? 'text-green' : ''}`}
+          className={`underline underline-offset-2 hover:text-red ${l.accent ? '' : 'text-ink/70'}`}
         >
           {l.label} ↗
         </a>

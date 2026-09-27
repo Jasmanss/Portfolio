@@ -10,14 +10,8 @@ export const prefersReducedMotion = () =>
 
 let lenis: Lenis | null = null
 
-// Stops on the horizontal journey register here, since `#id` can't be scrolled to inside a moving track.
-// Each entry returns the vertical scroll position that brings that stop into view.
-export const journeyStops = new Map<string, () => number>()
-
 // Jump or glide to a position; works with or without smooth scrolling.
 export function scrollToTarget(target: number | string | HTMLElement, immediate = false) {
-  const stop = typeof target === 'string' && target.startsWith('#') ? journeyStops.get(target.slice(1)) : undefined
-  if (stop) target = stop()
   if (lenis) lenis.scrollTo(target, { immediate, offset: typeof target === 'number' ? 0 : -80 })
   else if (typeof target === 'number') window.scrollTo(0, target)
   else (typeof target === 'string' ? document.querySelector(target) : target)?.scrollIntoView()

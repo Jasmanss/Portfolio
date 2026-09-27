@@ -81,24 +81,24 @@ export function GitHubActivity() {
 
   if (failed || (items && !items.length)) {
     return (
-      <p className="text-night/70">
+      <p className="text-ink/70">
         Activity is taking a break.{' '}
-        <a href={LINKS.github} target="_blank" rel="noreferrer" className="link-underline text-green">
+        <a href={LINKS.github} target="_blank" rel="noreferrer" className="underline text-red">
           See GitHub ↗
         </a>
       </p>
     )
   }
-  if (!items) return <p className="font-mono text-[13px] text-night/60">Checking GitHub…</p>
+  if (!items) return <p className="text-mute">Checking GitHub…</p>
   return (
     <ul className="space-y-3">
       {items.map((a) => (
-        <li key={a.id} className="flex items-baseline justify-between gap-4 border-t border-night/15 pt-3">
+        <li key={a.id} className="flex items-baseline justify-between gap-4 border-t border-rule pt-3">
           <span>
-            <span className="font-mono text-[12px] text-night/60">{a.repo}</span>
+            <span className="text-mute">{a.repo}</span>
             <span className="block leading-snug">{a.text}</span>
           </span>
-          <span className="shrink-0 font-mono text-[12px] text-night/60">{ago(a.at)}</span>
+          <span className="shrink-0 text-mute">{ago(a.at)}</span>
         </li>
       ))}
     </ul>

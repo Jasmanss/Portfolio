@@ -81,21 +81,21 @@ export default function Cursor() {
       >
         <div
           className={`flex items-center justify-center rounded-full transition-[width,height,background-color,border-color] duration-300 ease-out ${
-            labelled ? 'text-night' : 'border border-cream/70 mix-blend-difference'
+            labelled ? 'text-ink' : 'border border-white/80 mix-blend-difference'
           }`}
           style={{
             width: size,
             height: size,
-            backgroundColor: labelled ? (mode.color ?? '#2BF27A') : 'transparent',
+            backgroundColor: labelled ? (mode.color ?? '#FF4747') : 'transparent',
           }}
         >
-          {labelled && <span className="font-mono text-[11px] font-medium">{mode.label ?? (mode.kind === 'drag' ? 'Throw' : 'View')}</span>}
+          {labelled && <span className="text-[12px] font-semibold uppercase tracking-tight">{mode.label ?? (mode.kind === 'drag' ? 'Throw' : 'View')}</span>}
         </div>
       </div>
       <div
         ref={dot}
         aria-hidden
-        className={`pointer-events-none fixed left-0 top-0 z-[201] size-1.5 rounded-full bg-cream mix-blend-difference ${
+        className={`pointer-events-none fixed left-0 top-0 z-[201] size-1.5 rounded-full bg-white mix-blend-difference ${
           labelled ? 'opacity-0' : ''
         }`}
       />

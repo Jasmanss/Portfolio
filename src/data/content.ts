@@ -144,7 +144,7 @@ export const SKILLS: { group: string; items: string[] }[] = [
 ]
 
 
-// Shown on the "now" stop of the journey. DRAFT: keep this current.
+// Shown on the About page. DRAFT: keep this current.
 export const NOW = {
   building: 'Getting Portlkit in front of its first freelancers',
   learning: 'How much permission an agent should get before it has to ask',

@@ -1,18 +1,13 @@
-@import '@fontsource-variable/archivo';
-@import '@fontsource-variable/martian-mono';
-@import '@fontsource-variable/bricolage-grotesque/opsz.css';
+@import '@fontsource/gloock';
+@import '@fontsource-variable/schibsted-grotesk';
 @import 'lenis/dist/lenis.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-html {
-  scroll-padding-top: 5rem;
-}
-
 body {
-  @apply bg-night text-cream font-sans antialiased;
+  @apply bg-paper text-ink font-sans antialiased text-[13px] leading-[1.35];
 }
 
 /* The custom cursor replaces the system one on fine pointers; text fields keep their caret. */
@@ -26,52 +21,46 @@ html.has-cursor textarea {
 }
 
 ::selection {
-  background: #2bf27a;
-  color: #0d0e0c;
+  background: #ff4747;
+  color: #0b0b0b;
 }
 
 :focus-visible {
-  outline: 2px solid #2bf27a;
+  outline: 2px solid #ff4747;
   outline-offset: 3px;
 }
 
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
 @layer utilities {
-  .container-xl {
-    @apply max-w-[1440px] mx-auto px-4 md:px-8;
+  .animate-fade-up {
+    animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
-  /* Display voice: tight, heavy, optical size tuned for huge settings. */
-  .type-display {
-    @apply font-display font-semibold tracking-[-0.04em] leading-[0.92];
-    font-variation-settings: 'opsz' 96;
+  /* Menu voice: tight uppercase grotesk. */
+  .type-menu {
+    @apply font-sans font-medium uppercase tracking-[-0.02em] leading-[0.95];
   }
-  /* A word dropped onto the page like a sticker. */
-  .sticker {
-    @apply relative inline-block px-[0.18em] pb-[0.04em] rounded-[0.12em] text-night;
-    box-shadow: 0.05em 0.06em 0 rgba(0, 0, 0, 0.35);
+  /* Poster voice: the red serif. */
+  .type-poster {
+    @apply font-serif uppercase leading-[0.82] tracking-[-0.02em];
   }
-  /* Just the sticker's paper, for stickers that animate in behind their text. */
-  .sticker-paper {
-    @apply rounded-[0.12em];
-    box-shadow: 0.05em 0.06em 0 rgba(0, 0, 0, 0.35);
-  }
-  /* { caption in braces } */
-  .brace {
-    @apply font-mono text-[12px] leading-relaxed text-cream/80;
-  }
-  .brace::before {
-    content: '{ ';
-    @apply text-muted;
-  }
-  .brace::after {
-    content: ' }';
-    @apply text-muted;
-  }
-  .pill {
-    @apply inline-flex items-center gap-2 rounded-full border border-cream/60 px-5 py-2.5 text-sm font-medium transition-colors hover:bg-cream hover:text-night;
-  }
-  /* Machine voice: labels, token ids, outputs. */
   .type-label {
-    @apply font-mono text-[11px] uppercase tracking-[0.14em];
+    @apply text-mute;
+  }
+  /* Numerals drawn as outlines, for the big counter. */
+  .type-outline {
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--stroke, #0b0b0b);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-up {
+      animation: none;
+    }
   }
   .link-underline {
     background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;

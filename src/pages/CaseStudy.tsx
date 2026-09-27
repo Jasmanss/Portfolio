@@ -1,123 +1,101 @@
-import { useLayoutEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { PROJECTS } from '../data/content'
-import ProjectLinks from '../components/ProjectLinks'
-import Shape from '../components/Shapes'
 import { PROJECT_LOOK } from '../data/look'
+import ProjectLinks from '../components/ProjectLinks'
+import Page, { Poster } from '../components/Page'
 import { TransitionLink } from '../components/Transition'
-import Contact from '../sections/Contact'
 import NotFound from './NotFound'
-import { gsap, prefersReducedMotion } from '../lib/motion'
 
 export default function CaseStudy() {
   const { slug } = useParams()
   const index = PROJECTS.findIndex((p) => p.slug === slug)
-  const page = useRef<HTMLElement>(null)
-
-  useLayoutEffect(() => {
-    if (index < 0 || prefersReducedMotion()) return
-    const ctx = gsap.context(() => {
-      gsap.from('[data-rise]', { yPercent: 110, duration: 1.1, ease: 'expo.out', stagger: 0.07, delay: 0.5 })
-      gsap.fromTo(
-        '[data-cover]',
-        { clipPath: 'inset(18% 8% 18% 8% round 12px)' },
-        {
-          clipPath: 'inset(0% 0% 0% 0% round 12px)',
-          ease: 'none',
-          scrollTrigger: { trigger: '[data-cover]', start: 'top 85%', end: 'top 25%', scrub: true },
-        },
-      )
-      gsap.utils.toArray<HTMLElement>('[data-point]').forEach((el) =>
-        gsap.from(el, { opacity: 0, y: 40, duration: 0.9, ease: 'expo.out', scrollTrigger: { trigger: el, start: 'top 85%' } }),
-      )
-    }, page)
-    return () => ctx.revert()
-  }, [index])
-
   if (index < 0) return <NotFound />
   const p = PROJECTS[index]
-  const next = PROJECTS[(index + 1) % PROJECTS.length]
   const look = PROJECT_LOOK[p.slug]
+  const next = PROJECTS[(index + 1) % PROJECTS.length]
   const nextLook = PROJECT_LOOK[next.slug]
 
   return (
-    <>
-      <article ref={page} className="container-xl pt-32 md:pt-40">
-        <div className="overflow-hidden">
-          <p data-rise className={`font-mono text-[13px] ${look.text}`}>{`{ ${p.kind} }`}</p>
-        </div>
-        <div className="overflow-hidden mt-4">
-          <h1 data-rise className="type-display text-[clamp(4rem,14vw,14rem)] -ml-[0.04em] pb-[0.06em] flex items-center gap-[0.15em]">
-            {p.title}
-            <Shape kind={look.shape} size={160} className="w-[0.7em] h-[0.7em] shrink-0" />
-          </h1>
-        </div>
+    <Page key={p.slug}>
+      <p className="type-label">
+        {String(index + 1).padStart(2, '0')} / {String(PROJECTS.length).padStart(2, '0')} · {look.category}
+      </p>
+      <h1 className="mt-3 type-poster text-red text-[clamp(4.5rem,16vw,16rem)]">
+        <Poster>{p.title}</Poster>
+      </h1>
 
-        <div className="mt-10 md:mt-14 grid md:grid-cols-12 gap-x-8 gap-y-10 border-t border-line pt-8">
-          <div className="md:col-span-7 space-y-6">
-            <div className="overflow-hidden">
-              <p data-rise className="type-label text-muted">Input</p>
-            </div>
-            <div className="overflow-hidden">
-              <p data-rise className="font-display font-semibold tracking-[-0.03em] leading-[1.08] text-[clamp(1.75rem,3.4vw,3.2rem)]">
-                “{p.input}”
-              </p>
-            </div>
-            <div className="overflow-hidden">
-              <p data-rise className={`font-mono text-[clamp(1rem,1.6vw,1.35rem)] ${look.text}`}>→ {p.output}</p>
-            </div>
-          </div>
-          <div className="md:col-span-4 md:col-start-9 space-y-8">
-            <div className="overflow-hidden">
-              <p data-rise className="text-[17px] leading-relaxed">{p.summary}</p>
-            </div>
-            <div className="overflow-hidden">
-              <div data-rise>
-                <p className="type-label text-muted">Built with</p>
-                <p className="mt-2 font-mono text-sm leading-relaxed">{p.stack.join(' / ')}</p>
-              </div>
-            </div>
-            <div className="overflow-hidden">
-              <div data-rise>
-                <ProjectLinks project={p} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <figure className={`mt-16 md:mt-24 rounded-[1.75rem] p-3 ${look.bg}`}>
-          <img
-            data-cover
-            src={p.image}
-            alt={p.imageAlt}
-            className="w-full aspect-[16/10] object-cover rounded-2xl bg-night"
-          />
-        </figure>
-
-        <section className="py-24 md:py-36 grid md:grid-cols-12 gap-8">
-          <h2 className="md:col-span-3 type-label text-muted">What I built</h2>
-          <ol className="md:col-span-9 space-y-12 md:space-y-16">
-            {p.highlights.map((h, i) => (
-              <li key={i} data-point className="border-t border-line pt-6 font-display font-medium tracking-[-0.02em] leading-[1.2] text-[clamp(1.4rem,2.4vw,2.2rem)]">
-                {h}
-              </li>
+      <section className="mt-12 grid gap-10 md:grid-cols-[1fr_1.6fr] md:gap-16">
+        <dl data-reveal className="grid grid-cols-[76px_1fr] content-start gap-x-3 gap-y-5">
+          <dt className="type-label">Type</dt>
+          <dd>{p.kind}</dd>
+          <dt className="type-label">Stack</dt>
+          <dd>{p.stack.join(', ')}</dd>
+          <dt className="type-label">Links</dt>
+          <dd>
+            <ProjectLinks project={p} />
+          </dd>
+          <dt className="type-label">Palette</dt>
+          <dd className="flex gap-[3px]">
+            {look.swatches.map((c) => (
+              <span key={c} className="block size-[14px]" style={{ backgroundColor: c }} />
             ))}
-          </ol>
-        </section>
+          </dd>
+        </dl>
+        <div data-reveal>
+          <p className="type-label">You hand it</p>
+          <p className="mt-2 text-[clamp(1.5rem,3vw,2.8rem)] font-medium leading-[1.08] tracking-[-0.03em]">“{p.input}”</p>
+          <p className="mt-8 type-label">It hands back</p>
+          <p className="mt-2 text-[clamp(1.5rem,3vw,2.8rem)] font-medium leading-[1.08] tracking-[-0.03em]" style={{ color: look.accent }}>
+            {p.output}
+          </p>
+          <p className="mt-10 max-w-[620px] text-[16px] text-ink/80">{p.summary}</p>
+        </div>
+      </section>
 
-        <nav className="border-t border-line py-16 md:py-24" aria-label="Next project">
-          <p className="type-label text-muted">Next project</p>
-          <TransitionLink
-            to={`/work/${next.slug}`}
-            className={`group mt-4 inline-flex items-baseline gap-[0.2em] type-display text-[clamp(3.5rem,10vw,10rem)] hover:${nextLook.text} transition-colors`}
-          >
-            {next.title}
-            <span className="inline-block transition-transform duration-500 group-hover:translate-x-[0.15em]">→</span>
-          </TransitionLink>
-          <p className="mt-4 font-mono text-sm text-muted">“{next.input}”</p>
-        </nav>
-      </article>
-      <Contact />
-    </>
+      <figure data-reveal className="mt-20 overflow-hidden" style={{ backgroundColor: look.card }}>
+        <img
+          src={p.image}
+          alt={p.imageAlt}
+          className={`aspect-[16/9] w-full ${look.fit === 'cover' ? 'object-cover' : 'object-contain p-[14%]'}`}
+        />
+      </figure>
+
+      <section className="mt-24" aria-labelledby="built">
+        <h2 id="built" className="type-label mb-4">
+          What I built
+        </h2>
+        <ol>
+          {p.highlights.map((h, i) => (
+            <li key={h} data-reveal className="grid gap-4 border-t border-ink py-7 md:grid-cols-[180px_1fr]">
+              <span className="font-serif text-[40px] leading-none text-red">{String(i + 1).padStart(2, '0')}</span>
+              <p className="max-w-[900px] text-[clamp(1.2rem,2vw,1.9rem)] font-medium leading-[1.18] tracking-[-0.02em]">{h}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <nav aria-label="Next project" className="mt-24 border-t border-ink pt-6">
+        <p className="type-label">Next project</p>
+        <TransitionLink
+          to={`/work/${next.slug}`}
+          label={next.title}
+          data-cursor="view"
+          data-cursor-label="Next"
+          data-cursor-color={nextLook.accent}
+          className="group mt-2 flex items-end justify-between gap-6"
+        >
+          <span className="type-poster text-[clamp(3.5rem,11vw,11rem)] transition-colors duration-300 group-hover:text-red">{next.title}</span>
+          <span className="hidden w-[min(300px,24vw)] shrink-0 overflow-hidden md:block" style={{ backgroundColor: nextLook.card }}>
+            <img
+              src={next.image}
+              alt=""
+              className={`aspect-[4/3] w-full transition-transform duration-700 group-hover:scale-105 ${
+                nextLook.fit === 'cover' ? 'object-cover' : 'object-contain p-[12%]'
+              }`}
+            />
+          </span>
+        </TransitionLink>
+      </nav>
+    </Page>
   )
 }

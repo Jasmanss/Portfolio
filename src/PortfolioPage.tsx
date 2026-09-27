@@ -1,42 +1,32 @@
-import { lazy, Suspense, useLayoutEffect } from 'react'
-import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
-import Nav from './components/Nav'
+import { lazy, Suspense } from 'react'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import Frame from './components/Frame'
 import { TransitionProvider } from './components/Transition'
-import Journey from './sections/Journey'
-import Contact from './sections/Contact'
 import Cursor from './components/Cursor'
 import Konami from './components/Konami'
+import Index from './pages/Index'
+import About from './pages/About'
+import PlaygroundPage from './pages/PlaygroundPage'
+import ContactPage from './pages/ContactPage'
 import CaseStudy from './pages/CaseStudy'
 import NotFound from './pages/NotFound'
-import { scrollToTarget, useSmoothScroll } from './lib/motion'
+import { useSmoothScroll } from './lib/motion'
 
 const Sign = import.meta.env.DEV ? lazy(() => import('./pages/Sign')) : null
-
-function Home() {
-  const { hash } = useLocation()
-  // Arriving at /#work from another page or a shared link lands on that section.
-  useLayoutEffect(() => {
-    if (hash) requestAnimationFrame(() => scrollToTarget(hash, true))
-  }, [hash])
-
-  return (
-    <main>
-      <Journey />
-      <Contact />
-    </main>
-  )
-}
 
 export default function PortfolioPage() {
   useSmoothScroll()
   return (
     <BrowserRouter>
       <TransitionProvider>
-        <Nav />
+        <Frame />
         <Cursor />
         <Konami />
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Index />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/playground" element={<PlaygroundPage />} />
+          <Route path="/contact" element={<ContactPage />} />
           <Route path="/work/:slug" element={<CaseStudy />} />
           {Sign && (
             <Route
