@@ -3,8 +3,9 @@ import { TransitionLink } from './Transition'
 
 const NAV_ITEMS = [
   { href: '/#work', label: 'Work' },
-  { href: '/#about', label: 'About' },
-  { href: '/#experience', label: 'Experience' },
+  { href: '/#jobs', label: 'Jobs' },
+  { href: '/#now', label: 'Now' },
+  { href: '/#ask', label: 'Ask' },
   { href: '/#contact', label: 'Contact' },
 ]
 

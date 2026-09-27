@@ -2,13 +2,10 @@ import { lazy, Suspense, useLayoutEffect } from 'react'
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
 import Nav from './components/Nav'
 import { TransitionProvider } from './components/Transition'
-import Hero from './sections/Hero'
-import Statement from './sections/Statement'
-import Marquee from './sections/Marquee'
-import Work from './sections/Work'
-import About from './sections/About'
-import Experience from './sections/Experience'
+import Journey from './sections/Journey'
 import Contact from './sections/Contact'
+import Cursor from './components/Cursor'
+import Konami from './components/Konami'
 import CaseStudy from './pages/CaseStudy'
 import NotFound from './pages/NotFound'
 import { scrollToTarget, useSmoothScroll } from './lib/motion'
@@ -24,12 +21,7 @@ function Home() {
 
   return (
     <main>
-      <Hero />
-      <Statement />
-      <Work />
-      <Marquee />
-      <About />
-      <Experience />
+      <Journey />
       <Contact />
     </main>
   )
@@ -41,6 +33,8 @@ export default function PortfolioPage() {
     <BrowserRouter>
       <TransitionProvider>
         <Nav />
+        <Cursor />
+        <Konami />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/work/:slug" element={<CaseStudy />} />

@@ -15,6 +15,16 @@ body {
   @apply bg-night text-cream font-sans antialiased;
 }
 
+/* The custom cursor replaces the system one on fine pointers; text fields keep their caret. */
+html.has-cursor,
+html.has-cursor * {
+  cursor: none !important;
+}
+html.has-cursor input,
+html.has-cursor textarea {
+  cursor: text !important;
+}
+
 ::selection {
   background: #2bf27a;
   color: #0d0e0c;
