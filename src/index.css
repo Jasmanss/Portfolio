@@ -1,14 +1,73 @@
+@import '@fontsource-variable/archivo';
+@import '@fontsource-variable/martian-mono';
+@import '@fontsource-variable/bricolage-grotesque/opsz.css';
+@import 'lenis/dist/lenis.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Optional: smooth scrolling */
-html { scroll-behavior: smooth; }
+html {
+  scroll-padding-top: 5rem;
+}
 
-/* Optional: nice selection */
-::selection { background: #111827; color: white; }
+body {
+  @apply bg-night text-cream font-sans antialiased;
+}
 
-/* Simple container utility */
+::selection {
+  background: #2bf27a;
+  color: #0d0e0c;
+}
+
+:focus-visible {
+  outline: 2px solid #2bf27a;
+  outline-offset: 3px;
+}
+
 @layer utilities {
-  .container-xl { @apply max-w-6xl mx-auto px-4; }
+  .container-xl {
+    @apply max-w-[1440px] mx-auto px-4 md:px-8;
+  }
+  /* Display voice: tight, heavy, optical size tuned for huge settings. */
+  .type-display {
+    @apply font-display font-semibold tracking-[-0.04em] leading-[0.92];
+    font-variation-settings: 'opsz' 96;
+  }
+  /* A word dropped onto the page like a sticker. */
+  .sticker {
+    @apply relative inline-block px-[0.18em] pb-[0.04em] rounded-[0.12em] text-night;
+    box-shadow: 0.05em 0.06em 0 rgba(0, 0, 0, 0.35);
+  }
+  /* Just the sticker's paper, for stickers that animate in behind their text. */
+  .sticker-paper {
+    @apply rounded-[0.12em];
+    box-shadow: 0.05em 0.06em 0 rgba(0, 0, 0, 0.35);
+  }
+  /* { caption in braces } */
+  .brace {
+    @apply font-mono text-[12px] leading-relaxed text-cream/80;
+  }
+  .brace::before {
+    content: '{ ';
+    @apply text-muted;
+  }
+  .brace::after {
+    content: ' }';
+    @apply text-muted;
+  }
+  .pill {
+    @apply inline-flex items-center gap-2 rounded-full border border-cream/60 px-5 py-2.5 text-sm font-medium transition-colors hover:bg-cream hover:text-night;
+  }
+  /* Machine voice: labels, token ids, outputs. */
+  .type-label {
+    @apply font-mono text-[11px] uppercase tracking-[0.14em];
+  }
+  .link-underline {
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+    transition: background-size 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .link-underline:hover {
+    background-size: 100% 1px;
+  }
 }
