@@ -16,7 +16,7 @@ export default function ProjectLinks({ project, className = '' }: { project: Pro
           href={l.href}
           target="_blank"
           rel="noreferrer"
-          className={`underline underline-offset-2 hover:text-red ${l.accent ? '' : 'text-ink/70'}`}
+          className={`underline underline-offset-4 hover:text-red ${l.accent ? 'text-red' : ''}`}
         >
           {l.label} ↗
         </a>

@@ -1,5 +1,7 @@
-@import '@fontsource/gloock';
-@import '@fontsource-variable/schibsted-grotesk';
+@import '@fontsource-variable/cormorant-garamond';
+@import '@fontsource-variable/cormorant-garamond/wght-italic.css';
+@import '@fontsource/cinzel/500.css';
+@import '@fontsource/cinzel/700.css';
 @import 'lenis/dist/lenis.css';
 
 @tailwind base;
@@ -7,7 +9,7 @@
 @tailwind utilities;
 
 body {
-  @apply bg-paper text-ink font-sans antialiased text-[13px] leading-[1.35];
+  @apply bg-wall-deep text-paper font-serif antialiased text-[18px] leading-[1.4];
 }
 
 /* The custom cursor replaces the system one on fine pointers; text fields keep their caret. */
@@ -21,12 +23,12 @@ html.has-cursor textarea {
 }
 
 ::selection {
-  background: #ff4747;
-  color: #0b0b0b;
+  background: #d4af5a;
+  color: #24150e;
 }
 
 :focus-visible {
-  outline: 2px solid #ff4747;
+  outline: 2px solid #f3dc8e;
   outline-offset: 3px;
 }
 
@@ -36,37 +38,100 @@ html.has-cursor textarea {
     transform: translateY(14px);
   }
 }
+@keyframes swing {
+  from {
+    transform: rotate(-7deg);
+  }
+  to {
+    transform: rotate(7deg);
+  }
+}
+@keyframes drift {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  15%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx, 40px), var(--dy, 120px));
+    opacity: 0;
+  }
+}
 
 @layer utilities {
   .animate-fade-up {
     animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
-  /* Menu voice: tight uppercase grotesk. */
-  .type-menu {
-    @apply font-sans font-medium uppercase tracking-[-0.02em] leading-[0.95];
+  .animate-swing {
+    animation: swing 1s ease-in-out infinite alternate;
   }
-  /* Poster voice: the red serif. */
-  .type-poster {
-    @apply font-serif uppercase leading-[0.82] tracking-[-0.02em];
+
+  /* Engraved small caps for labels and placards. */
+  .type-caps {
+    @apply font-caps uppercase tracking-[0.18em] text-[11px] font-medium;
   }
   .type-label {
-    @apply text-mute;
+    @apply font-caps uppercase tracking-[0.16em] text-[10px] text-mute;
   }
-  /* Numerals drawn as outlines, for the big counter. */
-  .type-outline {
+
+  /* Red damask: an embossed motif, light edge over dark edge, on deep red. */
+  .damask {
+    background-color: #6e0e14;
+    background-image: radial-gradient(ellipse at 50% 35%, rgba(255, 170, 120, 0.1), transparent 60%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='168' viewBox='0 0 120 168'%3E%3Cg fill='%23fff' fill-opacity='.045' transform='translate(0 -1)'%3E%3Cpath d='M60 34c14 14 24 34 0 88-24-54-14-74 0-88z'/%3E%3Cpath d='M60 64c22 0 36 16 30 38-9-11-19-14-30-6-11-8-21-5-30 6-6-22 8-38 30-38z'/%3E%3Ccircle cx='60' cy='132' r='5'/%3E%3Cpath d='M0 0l9 14L0 28l-9-14zM120 0l9 14-9 14-9-14zM0 140l9 14-9 14-9-14zM120 140l9 14-9 14-9-14zM0 70l5 14-5 14-5-14zM120 70l5 14-5 14-5-14z'/%3E%3C/g%3E%3Cg fill='%23000' fill-opacity='.22'%3E%3Cpath d='M60 34c14 14 24 34 0 88-24-54-14-74 0-88z'/%3E%3Cpath d='M60 64c22 0 36 16 30 38-9-11-19-14-30-6-11-8-21-5-30 6-6-22 8-38 30-38z'/%3E%3Ccircle cx='60' cy='132' r='5'/%3E%3Cpath d='M0 0l9 14L0 28l-9-14zM120 0l9 14-9 14-9-14zM0 140l9 14-9 14-9-14zM120 140l9 14-9 14-9-14zM0 70l5 14-5 14-5-14zM120 70l5 14-5 14-5-14z'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 100% 100%, 120px 168px;
+  }
+
+  /* Polished gilt, as a fill and as lettering. */
+  .gilt {
+    background-image: linear-gradient(
+      135deg,
+      #6e5114 0%,
+      #e9c863 16%,
+      #fff3b0 26%,
+      #b8892d 42%,
+      #f6e27a 58%,
+      #8a6a1f 74%,
+      #e9c863 88%,
+      #6e5114 100%
+    );
+  }
+  .gilt-text {
+    @apply gilt;
+    -webkit-background-clip: text;
+    background-clip: text;
     color: transparent;
-    -webkit-text-stroke: 1.5px var(--stroke, #0b0b0b);
   }
-  @media (prefers-reduced-motion: reduce) {
-    .animate-fade-up {
-      animation: none;
-    }
+
+  /* Crimson velvet: two fold rhythms over each other so the pleats never look stamped. */
+  .velvet {
+    background-color: #7a0d15;
+    background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.35), transparent 18%, transparent 70%, rgba(0, 0, 0, 0.5)),
+      repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.55) 0, rgba(255, 90, 90, 0.18) 22px, rgba(255, 140, 140, 0.28) 30px, rgba(0, 0, 0, 0.1) 44px, rgba(0, 0, 0, 0.6) 64px),
+      repeating-linear-gradient(90deg, transparent 0, rgba(0, 0, 0, 0.25) 37px, transparent 90px);
   }
-  .link-underline {
-    background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
-    transition: background-size 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Mahogany wainscoting with raised panels and a gilt chair rail. */
+  .wainscot {
+    background-color: #2b1409;
+    background-image: linear-gradient(180deg, rgba(255, 200, 140, 0.08), transparent 30%),
+      repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.55) 0 3px, transparent 3px 26px, rgba(255, 210, 160, 0.07) 26px 28px, transparent 28px 250px, rgba(0, 0, 0, 0.35) 250px 252px, transparent 252px 280px);
   }
-  .link-underline:hover {
-    background-size: 100% 1px;
+
+  .parchment {
+    background-color: #f2e6cc;
+    background-image: radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.5), transparent 60%),
+      radial-gradient(ellipse at 80% 90%, rgba(140, 100, 40, 0.18), transparent 55%);
+    @apply text-ink;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .animate-swing {
+    animation: none;
   }
 }

@@ -86,10 +86,10 @@ export default function Cursor() {
           style={{
             width: size,
             height: size,
-            backgroundColor: labelled ? (mode.color ?? '#FF4747') : 'transparent',
+            backgroundColor: labelled ? (mode.color ?? '#F3DC8E') : 'transparent',
           }}
         >
-          {labelled && <span className="text-[12px] font-semibold uppercase tracking-tight">{mode.label ?? (mode.kind === 'drag' ? 'Throw' : 'View')}</span>}
+          {labelled && <span className="font-caps text-[11px] font-bold uppercase tracking-[0.12em]">{mode.label ?? (mode.kind === 'drag' ? 'Throw' : 'View')}</span>}
         </div>
       </div>
       <div

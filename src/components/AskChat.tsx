@@ -61,15 +61,16 @@ export default function AskChat() {
   }
 
   return (
-    <div className="flex h-full flex-col bg-white p-5 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.25)]">
+    <div className="flex h-full flex-col p-3 md:p-4">
       <div ref={log} className="flex-1 space-y-4 overflow-y-auto pr-1 min-h-[180px]" aria-live="polite">
         {turns.length === 0 ? (
           <div>
-            <p className="type-poster text-red text-[34px]">Ask me</p>
+            <p className="type-label">Ask the curator</p>
+            <p className="mt-1 text-[clamp(1.6rem,2.4vw,2.2rem)] italic leading-tight">Questions about the collection?</p>
             <p className="mt-2 text-ink/70">Ask anything about Jasman’s work. Answers come from what’s on this site.</p>
             <div className="mt-5 flex flex-wrap gap-2">
               {SUGGESTIONS.map((s) => (
-                <button key={s} type="button" onClick={() => ask(s)} className="border border-rule px-3 py-1.5 hover:border-ink hover:bg-ink hover:text-paper transition-colors">
+                <button key={s} type="button" onClick={() => ask(s)} className="border border-rule px-3 py-1 text-[16px] italic hover:border-ink hover:bg-ink hover:text-paper transition-colors">
                   {s}
                 </button>
               ))}
@@ -81,7 +82,7 @@ export default function AskChat() {
               key={i}
               className={
                 t.role === 'user'
-                  ? 'ml-auto w-fit max-w-[85%] bg-red px-3 py-2 text-ink'
+                  ? 'ml-auto w-fit max-w-[85%] bg-red px-3 py-2 text-paper italic'
                   : 'max-w-[92%] leading-relaxed text-ink/85'
               }
             >
@@ -90,7 +91,7 @@ export default function AskChat() {
           ))
         )}
       </div>
-      <form onSubmit={submit} className="mt-4 flex gap-2 border-t border-rule pt-4">
+      <form onSubmit={submit} className="mt-3 flex gap-2 border-t border-rule pt-3">
         <label htmlFor="ask" className="sr-only">
           Your question
         </label>
@@ -102,7 +103,7 @@ export default function AskChat() {
           placeholder="Ask about a project, a job, a skill…"
           className="min-w-0 flex-1 border-b border-ink bg-transparent py-2 placeholder:text-mute focus:border-red outline-none"
         />
-        <button type="submit" disabled={busy || !draft.trim()} className="type-menu text-[18px] px-2 hover:text-red disabled:opacity-30">
+        <button type="submit" disabled={busy || !draft.trim()} className="type-caps px-2 text-red hover:underline disabled:opacity-30">
           Ask
         </button>
       </form>

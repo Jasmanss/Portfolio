@@ -1,20 +1,26 @@
 import type { ShapeKind } from '../components/Shapes'
 
-// Each project's swatch strip, its accent, and how its cover sits on a card.
+// How each project hangs in the gallery: its painting, the painting's own title, and its size on the wall.
 export type Look = {
+  numeral: string
+  painting: string
+  // The artwork's title; the project name stays the headline.
+  artwork: string
+  // Width over height of the painting.
+  aspect: number
   accent: string
-  swatches: [string, string, string]
   shape: ShapeKind
-  // Logos sit on a solid card; photos and screenshots fill it.
-  fit: 'cover' | 'contain'
-  card: string
-  // One or two words for the index list.
-  category: string
 }
 
 export const PROJECT_LOOK: Record<string, Look> = {
-  portlkit: { category: 'SaaS', accent: '#6B5CFF', swatches: ['#6B5CFF', '#C9C2FF', '#0B0B0B'], shape: 'ring', fit: 'cover', card: '#1a1a1a' },
-  imperium: { category: 'AI agent', accent: '#FF6A1A', swatches: ['#FF6A1A', '#FFD29E', '#0B0B0B'], shape: 'asterisk', fit: 'contain', card: '#0B0B0B' },
-  hairstyl: { category: 'iOS app', accent: '#FF5FC8', swatches: ['#FF5FC8', '#FFE0F4', '#0B0B0B'], shape: 'flower', fit: 'cover', card: '#000000' },
-  callback: { category: 'Web app', accent: '#2F55D4', swatches: ['#2F55D4', '#A8D4FF', '#E4E9F2'], shape: 'capsule', fit: 'cover', card: '#E4E9F2' },
+  portlkit: { numeral: 'I', painting: '/museum/portlkit.jpg', artwork: 'One Door on the Mountain', aspect: 1168 / 880, accent: '#E9C98A', shape: 'ring' },
+  imperium: { numeral: 'II', painting: '/museum/imperium.jpg', artwork: 'The Emperor Commands His Machine', aspect: 880 / 1168, accent: '#E9C98A', shape: 'asterisk' },
+  hairstyl: { numeral: 'III', painting: '/museum/hairstyl.jpg', artwork: 'Young Man Consulting the Mirror', aspect: 880 / 1168, accent: '#E9C98A', shape: 'flower' },
+  callback: { numeral: 'IV', painting: '/museum/callback.jpg', artwork: 'Still Life with Unanswered Letters', aspect: 1, accent: '#E9C98A', shape: 'capsule' },
+}
+
+// "Next.js, TypeScript and Supabase on canvas": a project's stack written as a painting's medium.
+export const medium = (stack: string[]) => {
+  const top = stack.slice(0, 3)
+  return `${top.slice(0, -1).join(', ')} and ${top[top.length - 1]} on canvas`
 }

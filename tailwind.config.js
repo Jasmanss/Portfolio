@@ -4,15 +4,23 @@ export default {
   theme: {
     extend: {
       colors: {
-        paper: '#ECECEC',
-        ink: '#0B0B0B',
-        red: '#FF4747',
-        mute: '#8C8C8C',
-        rule: '#D2D2D2',
+        // Parchment and ink, for placards, letters and the guestbook.
+        paper: '#F2E6CC',
+        ink: '#24150E',
+        red: '#8E1119',
+        mute: '#7A6A55',
+        rule: '#CDBB94',
+        // The house.
+        wall: '#6E0E14',
+        'wall-deep': '#3D060A',
+        gold: '#D4AF5A',
+        'gold-light': '#F3DC8E',
+        'gold-deep': '#8A6424',
+        wood: '#2B1409',
       },
       fontFamily: {
-        serif: ['Gloock', 'Georgia', 'serif'],
-        sans: ['"Schibsted Grotesk Variable"', 'system-ui', 'sans-serif'],
+        serif: ['"Cormorant Garamond Variable"', 'Georgia', 'serif'],
+        caps: ['Cinzel', 'Georgia', 'serif'],
       },
     },
   },
