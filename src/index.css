@@ -1,5 +1,5 @@
-@import '@fontsource-variable/jetbrains-mono';
-@import '@fontsource/anton';
+@import '@fontsource-variable/inter-tight';
+@import '@fontsource/instrument-serif/400-italic.css';
 @import 'lenis/dist/lenis.css';
 
 @tailwind base;
@@ -7,7 +7,7 @@
 @tailwind utilities;
 
 body {
-  @apply bg-void text-bone font-mono antialiased text-[11px] uppercase leading-[1.5] tracking-[0.02em];
+  @apply bg-night text-snow font-sans antialiased text-[14px] leading-[1.45];
 }
 
 /* The custom cursor replaces the system one on fine pointers; text fields keep their caret. */
@@ -21,74 +21,39 @@ html.has-cursor textarea {
 }
 
 ::selection {
-  background: #ff7a2b;
-  color: #0b0d0c;
+  background: #ff3b1f;
+  color: #0d0d0d;
 }
 
 :focus-visible {
-  outline: 1px solid #ff7a2b;
+  outline: 1px solid #ff3b1f;
   outline-offset: 4px;
 }
 
-@keyframes grain {
-  0% { transform: translate(0, 0); }
-  20% { transform: translate(-3%, 2%); }
-  40% { transform: translate(2%, -3%); }
-  60% { transform: translate(-2%, -1%); }
-  80% { transform: translate(3%, 3%); }
-  100% { transform: translate(0, 0); }
-}
-@keyframes flicker {
-  0%, 100% { opacity: 1; }
-  47% { opacity: 1; }
-  48% { opacity: 0.86; }
-  50% { opacity: 1; }
-  73% { opacity: 0.93; }
-  74% { opacity: 1; }
-}
 @keyframes fade-up {
-  from { opacity: 0; transform: translateY(10px); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
 }
 
 @layer utilities {
-  .type-cond {
-    @apply font-cond uppercase leading-[0.86] tracking-[-0.01em];
+  /* An italic serif word dropped into sans text. */
+  .em {
+    @apply font-serif italic font-normal tracking-normal;
   }
-  /* Film grain: a noise tile that jitters over footage. */
-  .grain {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    animation: grain 0.6s steps(3) infinite;
-  }
-  /* Faint scanlines, like a monitor. */
-  .scanlines {
-    background-image: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.22) 0 1px, transparent 1px 3px);
-  }
-  .animate-flicker {
-    animation: flicker 4s linear infinite;
+  .type-label {
+    @apply text-[11px] uppercase tracking-[0.02em] text-ash;
   }
   .animate-fade-up {
     animation: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
-  /* [ bracketed ] labels */
-  .bracket {
-    @apply relative inline-flex items-center px-3 py-2;
-  }
-  .bracket::before,
-  .bracket::after {
-    content: '';
-    @apply absolute inset-y-0 w-[6px] border-bone/70;
-  }
-  .bracket::before {
-    @apply left-0 border-y border-l;
-  }
-  .bracket::after {
-    @apply right-0 border-y border-r;
+  .grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .5 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .grain,
-  .animate-flicker,
   .animate-fade-up {
     animation: none;
   }

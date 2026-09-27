@@ -1,23 +1,31 @@
 import { useLocation } from 'react-router-dom'
 import { TransitionLink } from './Transition'
-import Scramble from './Scramble'
+import { scrollToTarget } from '../lib/motion'
 
-// Two quiet exits pinned to the screen edges, like the HUD of a camera.
+const LINKS = [
+  ['About', '#about'],
+  ['Work', '#work'],
+  ['Skills', '#skills'],
+  ['Contact', '#contact'],
+] as const
+
+// Top-right menu that stays legible over anything by inverting what's behind it.
 export default function Frame() {
   const { pathname } = useLocation()
-  const about = pathname === '/about'
+  const home = pathname === '/'
   return (
-    <>
-      <TransitionLink
-        to="/"
-        label="/index"
-        className={`fixed left-5 top-1/2 z-40 -translate-y-1/2 hover:text-flame ${pathname === '/' ? 'text-bone' : 'text-bone/70'}`}
-      >
-        <Scramble text="Index" hover />
-      </TransitionLink>
-      <TransitionLink to="/about" label="/about" className={`fixed right-5 top-1/2 z-40 -translate-y-1/2 hover:text-flame ${about ? 'text-flame' : ''}`}>
-        <Scramble text="About" hover />
-      </TransitionLink>
-    </>
+    <nav aria-label="Main" className="fixed right-5 top-5 z-50 flex gap-5 text-[12px] text-snow mix-blend-difference">
+      {LINKS.map(([label, hash]) =>
+        home ? (
+          <button key={label} type="button" onClick={() => scrollToTarget(hash)} className="hover:opacity-60">
+            {label}
+          </button>
+        ) : (
+          <TransitionLink key={label} to={`/${hash}`} label="Jasman Sidhu" className="hover:opacity-60">
+            {label}
+          </TransitionLink>
+        ),
+      )}
+    </nav>
   )
 }

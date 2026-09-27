@@ -63,13 +63,13 @@ export default function AskChat() {
   return (
     <div className="flex h-full flex-col border border-line bg-black/40 p-4 normal-case">
       <div ref={log} className="min-h-[200px] flex-1 space-y-3 overflow-y-auto pr-1 text-[12px] leading-relaxed" aria-live="polite">
-        <p className="text-dim">jasman@portfolio ~ % ask --about jasman</p>
+        <p className="text-ash">jasman@portfolio ~ % ask --about jasman</p>
         {turns.length === 0 ? (
           <div>
-            <p className="text-bone/80">Answers come only from what's on this site. Try one:</p>
+            <p className="text-snow/80">Answers come only from what's on this site. Try one:</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {SUGGESTIONS.map((s) => (
-                <button key={s} type="button" onClick={() => ask(s)} className="border border-line px-2 py-1 text-bone/80 transition-colors hover:border-flame hover:text-flame">
+                <button key={s} type="button" onClick={() => ask(s)} className="border border-line px-2 py-1 text-snow/80 transition-colors hover:border-ember hover:text-ember">
                   {s}
                 </button>
               ))}
@@ -77,15 +77,15 @@ export default function AskChat() {
           </div>
         ) : (
           turns.map((t, i) => (
-            <p key={i} className={t.role === 'user' ? 'text-flame' : 'text-bone/90'}>
+            <p key={i} className={t.role === 'user' ? 'text-ember' : 'text-snow/90'}>
               {t.role === 'user' ? '> ' : ''}
-              {t.text || <span className="animate-pulse text-dim">thinking…</span>}
+              {t.text || <span className="animate-pulse text-ash">thinking…</span>}
             </p>
           ))
         )}
       </div>
       <form onSubmit={submit} className="mt-3 flex items-center gap-2 border-t border-line pt-3 text-[12px]">
-        <label htmlFor="ask" className="text-flame">
+        <label htmlFor="ask" className="text-ember">
           &gt;
         </label>
         <input
@@ -94,9 +94,9 @@ export default function AskChat() {
           onChange={(e) => setDraft(e.target.value)}
           maxLength={500}
           placeholder="ask about a project, a job, a skill"
-          className="min-w-0 flex-1 bg-transparent text-bone caret-flame outline-none placeholder:text-dim"
+          className="min-w-0 flex-1 bg-transparent text-snow caret-ember outline-none placeholder:text-ash"
         />
-        <button type="submit" disabled={busy || !draft.trim()} className="uppercase text-bone hover:text-flame disabled:opacity-30">
+        <button type="submit" disabled={busy || !draft.trim()} className="uppercase text-snow hover:text-ember disabled:opacity-30">
           Enter ↵
         </button>
       </form>

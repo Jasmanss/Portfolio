@@ -4,15 +4,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        void: '#0B0D0C',
-        bone: '#E8E6DF',
-        dim: '#6E726C',
-        line: '#2A2D2B',
-        flame: '#FF7A2B',
+        night: '#0D0D0D',
+        snow: '#F2F2F2',
+        ash: '#8A8A8A',
+        line: '#262626',
+        ember: '#FF3B1F',
       },
       fontFamily: {
-        mono: ['"JetBrains Mono Variable"', 'ui-monospace', 'monospace'],
-        cond: ['Anton', 'Impact', 'sans-serif'],
+        sans: ['"Inter Tight Variable"', 'system-ui', 'sans-serif'],
+        serif: ['"Instrument Serif"', 'Georgia', 'serif'],
+        mono: ['ui-monospace', 'Menlo', 'monospace'],
       },
     },
   },

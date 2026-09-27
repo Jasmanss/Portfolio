@@ -56,12 +56,12 @@ export default function Konami() {
     <div ref={layer} aria-live="polite" className="pointer-events-none fixed inset-0 z-[150] overflow-hidden">
       {Array.from({ length: 36 }, (_, i) => (
         <div key={i} data-piece className="absolute left-0 top-0">
-          <span className="font-mono font-bold text-flame" style={{ fontSize: 18 + (i % 5) * 10 }}>
+          <span className="font-mono font-bold text-ember" style={{ fontSize: 18 + (i % 5) * 10 }}>
             {GLYPHS[i % GLYPHS.length]}
           </span>
         </div>
       ))}
-      <p data-toast className="absolute bottom-16 left-1/2 -translate-x-1/2 whitespace-nowrap border border-flame bg-void px-5 py-3 text-flame">
+      <p data-toast className="absolute bottom-16 left-1/2 -translate-x-1/2 whitespace-nowrap border border-ember bg-night px-5 py-3 text-ember">
         Cheat code accepted. You found the fun part.
       </p>
     </div>
