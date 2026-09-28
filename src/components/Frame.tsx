@@ -17,11 +17,11 @@ export default function Frame() {
     <nav aria-label="Main" className="fixed right-5 top-5 z-50 flex gap-5 text-[12px] text-snow mix-blend-difference">
       {LINKS.map(([label, hash]) =>
         home ? (
-          <button key={label} type="button" onClick={() => scrollToTarget(hash)} className="hover:opacity-60">
+          <button key={label} data-frame-link type="button" onClick={() => scrollToTarget(hash)} className="hover:opacity-60">
             {label}
           </button>
         ) : (
-          <TransitionLink key={label} to={`/${hash}`} label="Jasman Sidhu" className="hover:opacity-60">
+          <TransitionLink key={label} data-frame-link to={`/${hash}`} label="Jasman Sidhu" className="hover:opacity-60">
             {label}
           </TransitionLink>
         ),

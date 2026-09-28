@@ -2,8 +2,9 @@ import { useEffect } from 'react'
 import Lenis from 'lenis'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { SplitText } from 'gsap/SplitText'
 
-gsap.registerPlugin(ScrollTrigger)
+gsap.registerPlugin(ScrollTrigger, SplitText)
 
 export const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -35,7 +36,7 @@ export function useSmoothScroll() {
   }, [])
 }
 
-export { gsap, ScrollTrigger }
+export { gsap, ScrollTrigger, SplitText }
 
 // Gives every [data-float] inside `root` an idle bob, scroll parallax (data-speed) and a lean toward the cursor
 // (data-depth). Call inside a gsap.context so it all reverts together.

@@ -3,12 +3,17 @@ import type { ReactNode } from 'react'
 import { ABOUT, EXPERIENCE, LINKS, SKILLS } from '../data/content'
 import { ENTRIES } from '../data/entries'
 import Hands from '../components/Hands'
+import type { HandsControl } from '../components/Hands'
 import AskChat from '../components/AskChat'
-import Signature from '../components/Signature'
 import { TransitionLink } from '../components/Transition'
-import { gsap, prefersReducedMotion, scrollToTarget, ScrollTrigger } from '../lib/motion'
+import { gsap, prefersReducedMotion, scrollToTarget, ScrollTrigger, SplitText } from '../lib/motion'
 
 const WORK = ENTRIES.slice(0, 4)
+const FACTS = [
+  { n: 147, suffix: '', label: 'machines off paper' },
+  { n: 150, suffix: '+', label: 'TestFlight users' },
+  { n: 2, suffix: '', label: 'products live' },
+]
 const GALLERY = [...ENTRIES.map((e) => e.still), '/portlkit.jpg', '/callback.jpg', '/hairstyl.jpg', '/jasman1.jpg', ...ENTRIES.slice(0, 3).map((e) => e.still)]
 
 // "Jasman Sidhu." — sans first name, italic serif surname, ember full stop.
@@ -20,6 +25,22 @@ export function Name({ className = '' }: { className?: string }) {
         Sidhu<span className="text-ember">.</span>
       </span>
     </p>
+  )
+}
+
+// The hero's version: the same name, split so it can be built letter by letter, with the full stop
+// drawn as a round dot the spark can land on.
+function HeroName({ className = '' }: { className?: string }) {
+  return (
+    <h1 aria-label="Jasman Sidhu" className={`flex items-end justify-between gap-[0.2em] leading-[0.8] tracking-[-0.045em] ${className}`}>
+      <span data-first aria-hidden className="whitespace-nowrap font-medium">
+        Jasman
+      </span>
+      <span data-last aria-hidden className="em flex items-baseline whitespace-nowrap tracking-[-0.02em]">
+        <span data-last-word>Sidhu</span>
+        <span data-period className="ml-[0.03em] inline-block size-[0.13em] rounded-full bg-ember" />
+      </span>
+    </h1>
   )
 }
 
@@ -42,6 +63,10 @@ export default function Home() {
   const [open, setOpen] = useState<string | null>(SKILLS[0].group)
   const [section, setSection] = useState('')
   const [pct, setPct] = useState(0)
+  // The edge labels only appear once the hero has finished building.
+  const [built, setBuilt] = useState(false)
+  // The hero's hands start pushed out past the edges and far apart; the scroll brings them in.
+  const handsCtl = useRef<HandsControl>({ reach: 0, spread: 1 }).current
 
   useLayoutEffect(() => {
     const el = root.current
@@ -49,7 +74,7 @@ export default function Home() {
     const reduce = prefersReducedMotion()
     let unfollow = () => {}
     const ctx = gsap.context(() => {
-      // Hero: the blobs drift on their own and follow the cursor a little.
+      // Hero. The ember light drifts on its own and leans toward the cursor.
       if (!reduce) {
         gsap.utils.toArray<HTMLElement>('[data-blob]').forEach((b, i) =>
           gsap.to(b, { xPercent: i % 2 ? 22 : -18, yPercent: i % 2 ? -14 : 16, scale: 1.15, duration: 6 + i * 2, ease: 'sine.inOut', yoyo: true, repeat: -1 }),
@@ -61,13 +86,78 @@ export default function Home() {
           by((e.clientY / innerHeight - 0.5) * 80)
         }
         window.addEventListener('pointermove', move)
-        gsap.from('[data-name] span', { yPercent: 110, duration: 1.4, ease: 'expo.out', stagger: 0.1, delay: 0.2 })
-        gsap.from('[data-hero-fade]', { opacity: 0, y: 12, duration: 1, ease: 'power3.out', stagger: 0.1, delay: 0.7 })
-        // Scrolling away: the name splits and the light dims.
-        gsap.to('[data-name] > span:first-child', { xPercent: -30, ease: 'none', scrollTrigger: { trigger: '[data-hero]', start: 'top top', end: 'bottom top', scrub: true } })
-        gsap.to('[data-name] > span:last-child', { xPercent: 30, ease: 'none', scrollTrigger: { trigger: '[data-hero]', start: 'top top', end: 'bottom top', scrub: true } })
-        gsap.to('[data-blobs]', { opacity: 0.25, ease: 'none', scrollTrigger: { trigger: '[data-hero]', start: 'top top', end: 'bottom top', scrub: true } })
         unfollow = () => window.removeEventListener('pointermove', move)
+      }
+
+      // The hero builds itself as you scroll. It starts as one red dot between where two hands will be;
+      // the hands arrive and point at it, the name writes itself underneath, the dot drops down to become
+      // the name's full stop, and then the light, the words, the numbers and the menu fill in.
+      const nav = document.querySelectorAll<HTMLElement>('[data-frame-link]')
+      if (reduce) {
+        handsCtl.spread = 0
+        handsCtl.reach = 0.14
+        gsap.set('[data-dot]', { autoAlpha: 0 })
+        gsap.set('[data-hint], [data-count]', { autoAlpha: 0 })
+        setBuilt(true)
+      } else {
+        const first = SplitText.create('[data-first]', { type: 'chars', mask: 'chars' })
+        const last = SplitText.create('[data-last-word]', { type: 'chars' })
+        const intro = SplitText.create('[data-intro]', { type: 'lines', mask: 'lines' })
+        const dot = el.querySelector<HTMLElement>('[data-dot]')!
+        const home = el.querySelector<HTMLElement>('[data-dot-home]')!
+        const period = el.querySelector<HTMLElement>('[data-period]')!
+        const countEl = el.querySelector<HTMLElement>('[data-count]')!
+        // Where the dot has to travel to land on the full stop, measured from untransformed anchors.
+        const trip = () => {
+          const a = home.getBoundingClientRect()
+          const b = period.getBoundingClientRect()
+          return { x: b.left + b.width / 2 - (a.left + a.width / 2), y: b.top + b.height / 2 - (a.top + a.height / 2), scale: b.width / a.width }
+        }
+        const count = { v: 0 }
+        const tl = gsap.timeline({
+          defaults: { ease: 'none' },
+          scrollTrigger: {
+            trigger: '[data-hero]',
+            start: 'top top',
+            end: () => `+=${innerHeight * 2.6}`,
+            pin: true,
+            scrub: 1,
+            invalidateOnRefresh: true,
+            onUpdate: (st) => setBuilt(st.progress > 0.92),
+          },
+        })
+        tl.to(count, { v: 100, duration: 92, onUpdate: () => void (countEl.textContent = `(${String(Math.round(count.v)).padStart(2, '0')})`) }, 0)
+          .to('[data-hint]', { autoAlpha: 0, duration: 4 }, 0)
+          .to('[data-dot-ring]', { autoAlpha: 0, duration: 3 }, 2)
+          // 1. The hands slide in from the edges and point at the dot.
+          .to(handsCtl, { spread: 0, duration: 20, ease: 'power2.out' }, 2)
+          // 2. "Jasman" rises letter by letter; "Sidhu" writes itself in, left to right.
+          .from(first.chars, { yPercent: 110, duration: 7, stagger: 2.6, ease: 'power3.out' }, 20)
+          .fromTo('[data-last]', { clipPath: 'inset(-25% 100% -25% -5%)' }, { clipPath: 'inset(-25% -8% -25% -5%)', duration: 18, ease: 'power1.inOut' }, 27)
+          .from(last.chars, { yPercent: 35, rotation: -12, autoAlpha: 0, duration: 6, stagger: 2.8, ease: 'power3.out' }, 27)
+          // 3. The spark leaves the gap on an arc and lands as the full stop. The hands lean after it.
+          .to(dot, { x: () => trip().x, duration: 12, ease: 'power1.inOut' }, 46)
+          .to(dot, { y: () => Math.min(0, trip().y) - innerHeight * 0.1, duration: 5, ease: 'power2.out' }, 46)
+          .to(dot, { y: () => trip().y, duration: 7, ease: 'power2.in' }, 51)
+          .to(dot, { scale: () => trip().scale, duration: 12, ease: 'power1.inOut' }, 46)
+          .set(dot, { autoAlpha: 0 }, 58)
+          .fromTo(period, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.01 }, 58)
+          .fromTo(period, { scale: 1.6 }, { scale: 1, duration: 3, ease: 'back.out(3)' }, 58)
+          .to(handsCtl, { reach: 0.14, duration: 12, ease: 'power1.inOut' }, 46)
+          // 4. The ember light blooms behind everything.
+          .fromTo('[data-glow]', { autoAlpha: 0, scale: 0.6 }, { autoAlpha: 0.85, scale: 1, duration: 22, ease: 'power2.out' }, 57)
+          .fromTo('[data-grain]', { autoAlpha: 0 }, { autoAlpha: 0.12, duration: 12 }, 60)
+          // 5. Then the words, the menu, the rule and the numbers fill in.
+          .from(intro.lines, { yPercent: 110, duration: 8, stagger: 2, ease: 'power3.out' }, 64)
+          .from(nav, { yPercent: -140, autoAlpha: 0, duration: 6, stagger: 1.6, ease: 'power3.out' }, 66)
+          .fromTo('[data-rule]', { scaleX: 0 }, { scaleX: 1, duration: 12, ease: 'power2.inOut' }, 70)
+          .from('[data-row-item]', { yPercent: 110, duration: 6, stagger: 2.4, ease: 'power3.out' }, 74)
+          .to('[data-count]', { autoAlpha: 0, duration: 4 }, 93)
+          .to({}, { duration: 0 }, 100)
+        el.querySelectorAll<HTMLElement>('[data-fact]').forEach((f, i) => {
+          const n = { v: 0 }
+          tl.to(n, { v: Number(f.dataset.fact), duration: 10, ease: 'power2.out', onUpdate: () => void (f.textContent = String(Math.round(n.v))) }, 77 + i * 2)
+        })
       }
 
       // The edge labels track which section you're in and how far down the page you are.
@@ -124,36 +214,71 @@ export default function Home() {
   return (
     <main ref={root}>
       {/* Edge labels: scroll progress on the left, the current section on the right */}
-      <p aria-hidden className="pointer-events-none fixed left-4 top-1/2 z-40 hidden -translate-y-1/2 type-label text-snow mix-blend-difference md:block">
+      <p aria-hidden className={`pointer-events-none fixed left-4 top-1/2 z-40 hidden -translate-y-1/2 type-label text-snow mix-blend-difference transition-opacity duration-500 md:block ${built ? 'opacity-100' : 'opacity-0'}`}>
         ({String(pct).padStart(2, '0')})
       </p>
-      <p aria-hidden className="pointer-events-none fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 type-label text-snow mix-blend-difference md:block">
+      <p aria-hidden className={`pointer-events-none fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 type-label text-snow mix-blend-difference transition-opacity duration-500 md:block ${built ? 'opacity-100' : 'opacity-0'}`}>
         <span key={section} className="animate-fade-up inline-block">
           {section}
         </span>
       </p>
-      {/* Hero */}
+      {/* Hero: built by the scroll, from a single red dot */}
       <section id="top" data-hero className="relative h-[100svh] overflow-hidden">
-        <div data-blobs aria-hidden className="absolute inset-0 blur-[90px]">
-          <div data-blob className="absolute left-[18%] top-[-10%] size-[55vw] rounded-full bg-ember opacity-90" />
-          <div data-blob className="absolute left-[48%] top-[5%] size-[40vw] rounded-full bg-[#FF8A3D] opacity-70" />
-          <div data-blob className="absolute left-[30%] top-[35%] size-[45vw] rounded-full bg-[#1a0604]" />
+        <div data-glow aria-hidden className="absolute inset-0">
+          <div data-blobs className="absolute inset-0 blur-[90px]">
+            <div data-blob className="absolute left-[18%] top-[-10%] size-[55vw] rounded-full bg-ember opacity-90" />
+            <div data-blob className="absolute left-[48%] top-[5%] size-[40vw] rounded-full bg-[#FF8A3D] opacity-70" />
+            <div data-blob className="absolute left-[30%] top-[35%] size-[45vw] rounded-full bg-[#1a0604]" />
+          </div>
         </div>
-        <div aria-hidden className="grain absolute inset-0 opacity-[0.12] mix-blend-overlay" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-night" />
+        <div data-grain aria-hidden className="grain absolute inset-0 opacity-[0.12] mix-blend-overlay" />
+        <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-night" />
 
-        <p data-hero-fade className="absolute left-5 top-5 max-w-[260px] text-[12px] leading-snug text-snow/85">
+        {/* The hands, pointing at the spark */}
+        <Hands control={handsCtl} className="absolute inset-x-0 top-[10vh] z-10 block h-[min(52vh,520px)] w-full" />
+
+        {/* The spark: where the fingertips meet, and later the full stop */}
+        <span data-dot-home aria-hidden className="pointer-events-none absolute left-1/2 top-[calc(10vh+min(52vh,520px)*0.46)] size-[18px] -translate-x-1/2 -translate-y-1/2" />
+        <span data-dot aria-hidden className="pointer-events-none absolute left-1/2 top-[calc(10vh+min(52vh,520px)*0.46)] z-20 -ml-[9px] -mt-[9px] size-[18px] rounded-full bg-ember shadow-[0_0_24px_4px_rgba(255,59,31,0.55)]">
+          <span data-dot-ring className="absolute inset-[-10px] animate-ping rounded-full border border-ember/70" />
+        </span>
+        <p data-count aria-hidden className="pointer-events-none absolute left-1/2 top-[calc(10vh+min(52vh,520px)*0.46+34px)] z-20 -translate-x-1/2 type-label text-snow/70">
+          (00)
+        </p>
+        <p data-hint aria-hidden className="pointer-events-none absolute bottom-8 left-1/2 z-20 -translate-x-1/2 type-label">
+          Scroll to begin
+        </p>
+
+        <p data-intro className="absolute left-5 top-14 z-10 max-w-[260px] text-[12px] leading-snug text-snow/85 md:top-5">
           Jasman Sidhu, software engineer, building useful products through code, AI and a lot of iteration.
         </p>
 
-        <div className="absolute inset-x-5 bottom-8">
-          <div data-name className="overflow-hidden">
-            <Name className="text-[clamp(4rem,15.5vw,17rem)]" />
-          </div>
-          <div data-hero-fade className="mt-5 flex items-center justify-between border-t border-snow/30 pt-3 text-[12px] text-snow/70">
-            <span>Oakland University · CS, AI concentration</span>
-            <span className="hidden md:inline">Scroll to explore</span>
-            <span>Sterling Heights, MI</span>
+        <div className="absolute inset-x-5 bottom-8 z-10">
+          <HeroName className="text-[13.6vw] md:text-[clamp(4rem,15.5vw,17rem)]" />
+          <div data-rule className="mt-5 h-px origin-left bg-snow/30" />
+          <div className="mt-3 flex items-start justify-between gap-6 text-[12px] text-snow/70">
+            <span className="overflow-hidden">
+              <span data-row-item className="block">
+                Oakland University · CS, AI concentration
+              </span>
+            </span>
+            <span className="hidden overflow-hidden md:block">
+              <span data-row-item className="flex gap-6">
+                {FACTS.map((f) => (
+                  <span key={f.label}>
+                    <span data-fact={f.n} className="text-snow">
+                      {f.n}
+                    </span>
+                    <span className="text-snow">{f.suffix}</span> {f.label}
+                  </span>
+                ))}
+              </span>
+            </span>
+            <span className="overflow-hidden text-right">
+              <span data-row-item className="block">
+                Sterling Heights, MI
+              </span>
+            </span>
           </div>
         </div>
       </section>
@@ -336,7 +461,6 @@ export default function Home() {
               <a href={`mailto:${LINKS.email}`} className="mt-3 block break-all text-[clamp(1.6rem,3vw,2.8rem)] font-medium tracking-[-0.03em] hover:text-ember">
                 {LINKS.email}
               </a>
-              <Signature auto className="mt-10 w-[min(320px,70vw)] text-night" />
             </div>
             <div className="h-[340px] rounded-[16px] bg-night text-snow">
               <AskChat />

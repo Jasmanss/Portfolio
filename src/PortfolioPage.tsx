@@ -1,4 +1,4 @@
-import { lazy, Suspense, useLayoutEffect } from 'react'
+import { useLayoutEffect } from 'react'
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
 import Frame from './components/Frame'
 import { TransitionProvider } from './components/Transition'
@@ -18,8 +18,6 @@ function Home() {
   return <HomePage />
 }
 
-const Sign = import.meta.env.DEV ? lazy(() => import('./pages/Sign')) : null
-
 export default function PortfolioPage() {
   useSmoothScroll()
   return (
@@ -31,16 +29,6 @@ export default function PortfolioPage() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/work/:slug" element={<Entry />} />
-          {Sign && (
-            <Route
-              path="/sign"
-              element={
-                <Suspense fallback={null}>
-                  <Sign />
-                </Suspense>
-              }
-            />
-          )}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </TransitionProvider>

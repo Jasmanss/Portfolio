@@ -38,11 +38,17 @@ const load = (src: string) =>
     img.src = src
   })
 
+// What a parent can steer instead of the built-in scroll: how close the fingertips are (reach, 0..1)
+// and how far both hands are pushed out past the edges (spread, 0 = in place, 1 = off screen).
+export type HandsControl = { reach: number; spread: number }
+
 // A human hand and a robot hand, drawn in characters, reaching for each other.
-// They close the gap as the footer scrolls into view, lean toward the cursor,
+// They close the gap as the footer scrolls into view (or as `control` says), lean toward the cursor,
 // scatter into noise where the cursor passes, and spark when their fingertips meet.
-export default function Hands({ className = '' }: { className?: string }) {
+export default function Hands({ className = '', control }: { className?: string; control?: HandsControl }) {
   const canvas = useRef<HTMLCanvasElement>(null)
+  const ctl = useRef(control)
+  ctl.current = control
 
   useEffect(() => {
     const cv = canvas.current
@@ -93,7 +99,7 @@ export default function Hands({ className = '' }: { className?: string }) {
       gsap.to(state, { lean: 0, duration: 0.8, ease: 'power3.out', overwrite: 'auto' })
     }
 
-    const st = reduce
+    const st = reduce || ctl.current
       ? null
       : ScrollTrigger.create({
           trigger: cv,
@@ -112,9 +118,10 @@ export default function Hands({ className = '' }: { className?: string }) {
       ctx.textBaseline = 'top'
 
       // Scrolling to the very bottom closes the gap; hovering near it gets them there sooner.
-      const closeness = Math.min(1, state.reach + state.lean * 0.25)
+      const c = ctl.current
+      const closeness = Math.min(1, (c ? c.reach : state.reach) + state.lean * 0.25)
       const maxGap = W * 0.34
-      const gap = Math.max(CW * 1.5, maxGap * (1 - closeness))
+      const gap = Math.max(CW * 1.5, maxGap * (1 - closeness)) + (c ? c.spread * W * 1.1 : 0)
       const tipY = H * 0.46
       const bob = Math.sin(t * 0.8) * 4
 
@@ -165,9 +172,12 @@ export default function Hands({ className = '' }: { className?: string }) {
 
     let raf = 0
     let last = 0
+    let visible = true
+    const io = new IntersectionObserver(([e]) => (visible = e.isIntersecting))
+    io.observe(cv)
     const loop = (now: number) => {
       raf = requestAnimationFrame(loop)
-      if (now - last < 33) return
+      if (!visible || now - last < 33) return
       last = now
       draw(now / 1000)
     }
@@ -187,6 +197,7 @@ export default function Hands({ className = '' }: { className?: string }) {
     return () => {
       alive = false
       cancelAnimationFrame(raf)
+      io.disconnect()
       st?.kill()
       window.removeEventListener('resize', resize)
       window.removeEventListener('pointermove', move)
