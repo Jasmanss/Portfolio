@@ -1,507 +1,368 @@
-import { useLayoutEffect, useRef, useState } from 'react'
-import type { ReactNode } from 'react'
-import { ABOUT, EXPERIENCE, LINKS, SKILLS } from '../data/content'
-import { ENTRIES } from '../data/entries'
-import Hands from '../components/Hands'
-import type { HandsControl } from '../components/Hands'
-import AskChat from '../components/AskChat'
-import { TransitionLink } from '../components/Transition'
-import { gsap, prefersReducedMotion, scrollToTarget, ScrollTrigger, SplitText } from '../lib/motion'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import HeroLight from '../components/HeroLight'
+import type { LightControl, Rgb } from '../components/HeroLight'
+import { LINKS } from '../data/content'
+import { frameSequence } from '../lib/sequence'
+import { gsap, lockScroll, prefersReducedMotion, ScrollTrigger, scrollToTarget, SplitText } from '../lib/motion'
 
-const WORK = ENTRIES.slice(0, 4)
-const FACTS = [
-  { n: 147, suffix: '', label: 'machines off paper' },
-  { n: 150, suffix: '+', label: 'TestFlight users' },
-  { n: 2, suffix: '', label: 'products live' },
-]
-const GALLERY = [...ENTRIES.map((e) => e.still), '/portlkit.jpg', '/callback.jpg', '/hairstyl.jpg', '/jasman1.jpg', ...ENTRIES.slice(0, 3).map((e) => e.still)]
+const SCRAMBLE = '01<>/\\{}[]#*+=-_'
+// What the letter wheels spin through before they land (no descenders, so nothing peeks into the next letter).
+const JUNK = '0123456789ABCDEFHKMNPRTUVWXZ#%*+='
+const TILES = ['J', 'Portlkit', 'Ember', 'Haven', 'S', 'Imperium', 'Callback', 'HairStyl', 'Contact']
 
-// "Jasman Sidhu." — sans first name, italic serif surname, ember full stop.
-export function Name({ className = '' }: { className?: string }) {
-  return (
-    <p className={`flex items-end justify-between gap-[0.2em] leading-[0.8] tracking-[-0.045em] ${className}`}>
-      <span className="font-medium">Jasman</span>
-      <span className="em tracking-[-0.02em]">
-        Sidhu<span className="text-ember">.</span>
-      </span>
-    </p>
-  )
-}
+// The site's one accent, clear sky blue (the same as --accent in index.css).
+const ACCENT: Rgb = [77, 163, 255]
 
-// The hero's version: the same name, split so it can be built letter by letter, with the full stop
-// drawn as a round dot the spark can land on.
-function HeroName({ className = '' }: { className?: string }) {
-  return (
-    <h1 aria-label="Jasman Sidhu" className={`flex items-end justify-between gap-[0.2em] leading-[0.8] tracking-[-0.045em] ${className}`}>
-      <span data-first aria-hidden className="whitespace-nowrap font-medium">
-        Jasman
-      </span>
-      <span data-last aria-hidden className="em flex items-baseline whitespace-nowrap tracking-[-0.02em]">
-        <span data-last-word>Sidhu</span>
-        <span data-period className="ml-[0.03em] inline-block size-[0.13em] rounded-full bg-ember" />
-      </span>
-    </h1>
-  )
-}
-
-function Counter({ n }: { n: string }) {
-  return <span className="type-label">({n})</span>
-}
-
-function SectionHead({ n, children }: { n: string; children: ReactNode }) {
-  return (
-    <div className="flex items-center justify-between border-b border-line pb-3">
-      <span className="type-label">{children}</span>
-      <Counter n={n} />
-    </div>
-  )
+// The time in Sterling Heights, for the bar at the bottom.
+function useClock() {
+  const read = () =>
+    new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Detroit' }).format(new Date())
+  const [time, setTime] = useState(read)
+  useEffect(() => {
+    const id = setInterval(() => setTime(read()), 15000)
+    return () => clearInterval(id)
+  }, [])
+  return time
 }
 
 export default function Home() {
   const root = useRef<HTMLElement>(null)
-  const [active, setActive] = useState(0)
-  const [open, setOpen] = useState<string | null>(SKILLS[0].group)
-  const [section, setSection] = useState('')
-  const [pct, setPct] = useState(0)
-  // The edge labels only appear once the hero has finished building.
-  const [built, setBuilt] = useState(false)
-  // The hero's hands start pushed out past the edges and far apart; the scroll brings them in.
-  const handsCtl = useRef<HandsControl>({ reach: 0, spread: 1 }).current
+  const light = useRef<LightControl>({ light: 0, cursor: 1, load: 0, boot: 1, accent: ACCENT }).current
+  const time = useClock()
 
   useLayoutEffect(() => {
     const el = root.current
     if (!el) return
-    const reduce = prefersReducedMotion()
-    let unfollow = () => {}
+    const hero = el.querySelector<HTMLElement>('[data-hero]')!
+    const name = el.querySelector<HTMLElement>('[data-name]')!
+    const first = el.querySelector<HTMLElement>('[data-first]')!
+    const last = el.querySelector<HTMLElement>('[data-last]')!
+
+    // The name spans the width with a gap in the middle, whatever the screen.
+    const fit = () => {
+      name.style.fontSize = '100px'
+      const natural = first.offsetWidth + last.offsetWidth
+      const pad = parseFloat(getComputedStyle(name).paddingLeft) * 2
+      const share = innerWidth < 768 ? 0.9 : 0.84
+      name.style.fontSize = `${((name.clientWidth - pad) * share * 100) / natural}px`
+    }
+    fit()
+
+    if (prefersReducedMotion()) {
+      Object.assign(light, { light: 1, cursor: 0, boot: 0 })
+      gsap.set('[data-hint], [data-window], [data-mark], [data-loader]', { autoAlpha: 0 })
+      window.addEventListener('resize', fit)
+      return () => window.removeEventListener('resize', fit)
+    }
+
+    // Always start at the top, held still until the loader is done.
+    history.scrollRestoration = 'manual'
+    window.scrollTo(0, 0)
+    lockScroll(true)
+
+    // What the loader waits for: the fonts and a first pass of the sequence's frames.
+    const ready = { fonts: 0, frames: 0 }
+    document.fonts?.ready.then(() => (ready.fonts = 1))
+    const player = frameSequence(el.querySelector<HTMLCanvasElement>('[data-seq]')!, '/sequence/hero', (s) => (ready.frames = s))
+
     const ctx = gsap.context(() => {
-      // Hero. The ember light drifts on its own and leans toward the cursor.
-      if (!reduce) {
-        gsap.utils.toArray<HTMLElement>('[data-blob]').forEach((b, i) =>
-          gsap.to(b, { xPercent: i % 2 ? 22 : -18, yPercent: i % 2 ? -14 : 16, scale: 1.15, duration: 6 + i * 2, ease: 'sine.inOut', yoyo: true, repeat: -1 }),
-        )
-        const bx = gsap.quickTo('[data-blobs]', 'x', { duration: 1.6, ease: 'power3' })
-        const by = gsap.quickTo('[data-blobs]', 'y', { duration: 1.6, ease: 'power3' })
-        const move = (e: PointerEvent) => {
-          bx((e.clientX / innerWidth - 0.5) * 120)
-          by((e.clientY / innerHeight - 0.5) * 80)
+      // Layout measurements that ignore transforms, so they stay right on every refresh.
+      const W = () => hero.clientWidth
+      const H = () => hero.clientHeight
+      const nameY = () => name.offsetTop + name.offsetHeight / 2
+      const small = () => Math.min(380, W() * 0.58) / (name.clientWidth - parseFloat(getComputedStyle(name).paddingLeft) * 2)
+
+      const chars = SplitText.create('[data-first], [data-last]', { type: 'chars' }).chars as HTMLElement[]
+      const links = gsap.utils.toArray<HTMLElement>('[data-scramble]', el)
+      const labels = links.map((l) => l.textContent ?? '')
+      links.forEach((l) => (l.textContent = ''))
+
+      // ---- The loader: a counter that rolls from 000 to 100 while the light blooms in behind it,
+      // then its wheels keep rolling and land on the letters of the name.
+      gsap.set(name, { y: H() / 2 - nameY(), scale: small(), autoAlpha: 0 })
+      gsap.set('[data-line] > span', { yPercent: 110 })
+      gsap.set('[data-rule]', { scaleX: 0, transformOrigin: 'left center' })
+      gsap.set('[data-clock]', { autoAlpha: 0 })
+      const wheels = gsap.utils.toArray<HTMLElement>('[data-wheel]', el)
+      const odometer = (v: number) => {
+        const ones = v % 10
+        const carry = Math.max(0, ones - 9)
+        const tensDigit = Math.floor(v / 10) % 10
+        const tens = tensDigit + carry
+        const hundreds = Math.floor(v / 100) + (tensDigit === 9 ? carry : 0)
+        ;[hundreds, tens, ones].forEach((p, i) => (wheels[i].style.transform = `translateY(${-p}em)`))
+      }
+      const shown = { v: 0 }
+      const t0 = performance.now()
+      const count = () => {
+        const elapsed = (performance.now() - t0) / 1000
+        // Never faster than 1.6 s so it reads, never stuck past 7 s if something fails to load.
+        const real = elapsed > 7 ? 1 : ready.fonts * 0.3 + ready.frames * 0.7
+        const target = Math.min(real, elapsed / 1.6)
+        shown.v += (target - shown.v) * 0.1
+        if (target >= 1 && shown.v > 0.996) shown.v = 1
+        odometer(shown.v * 100)
+        light.load = shown.v
+        if (shown.v === 1) {
+          gsap.ticker.remove(count)
+          ctx.add(land)
         }
-        window.addEventListener('pointermove', move)
-        unfollow = () => window.removeEventListener('pointermove', move)
+      }
+      gsap.ticker.add(count)
+
+      // Each letter becomes a little wheel of random characters that spins down onto the real letter.
+      const land = () => {
+        // The fonts have arrived by now, so size the name with them before it shows (the first fit ran with the
+        // fallback font, and the refresh after this would otherwise make the name jump).
+        fit()
+        gsap.set(name, { y: H() / 2 - nameY(), scale: small() })
+        const tl = gsap.timeline({ onComplete: () => ctx.add(buildScroll) })
+        tl.to('[data-count]', { yPercent: -70, autoAlpha: 0, filter: 'blur(6px)', duration: 0.5, ease: 'power2.in' }, 0)
+          .set(name, { autoAlpha: 1 }, 0.25)
+        chars.forEach((c, i) => {
+          const letter = c.textContent ?? ''
+          const spins = 5 + (i % 4)
+          const junk = Array.from({ length: spins }, () => JUNK[(Math.random() * JUNK.length) | 0])
+          // The hidden letter keeps the box its real size; the wheel sits on top of it and is clipped to it.
+          // Each character gets a 1.4em slot (a 0.8em line, then a gap) so the ones above and below never peek in.
+          c.innerHTML = `<span class="invisible">${letter}</span><span class="absolute inset-x-0 top-0 block">${[...junk, letter]
+            .map((g) => `<span class="block h-[1.4em]">${g}</span>`)
+            .join('')}</span>`
+          c.style.position = 'relative'
+          c.style.clipPath = 'inset(-0.14em -0.12em -0.2em -0.12em)'
+          const strip = c.lastElementChild as HTMLElement
+          tl.fromTo(
+            strip,
+            { y: 0 },
+            {
+              y: `${-spins * 1.4}em`,
+              duration: 1.1,
+              ease: 'power4.out',
+              onComplete: () => {
+                c.textContent = letter
+                c.style.clipPath = ''
+                c.style.position = ''
+              },
+            },
+            0.25 + i * 0.05,
+          )
+        })
+        tl.to(light, { boot: 0, duration: 1.4, ease: 'power2.inOut' }, 0.5)
+          .to(light, { light: 0.3, duration: 1.6, ease: 'power2.out' }, 0.6)
+          .to('[data-hint]', { autoAlpha: 1, duration: 0.8 }, 1.3)
+          .call(() => lockScroll(false), [], 1.1)
       }
 
-      // The hero builds itself as you scroll. It starts as one red dot between where two hands will be;
-      // the hands arrive and point at it, the name writes itself underneath, the dot drops down to become
-      // the name's full stop, and then the light, the words, the numbers and the menu fill in.
-      const nav = document.querySelectorAll<HTMLElement>('[data-frame-link]')
-      if (reduce) {
-        handsCtl.spread = 0
-        handsCtl.reach = 0.14
-        gsap.set('[data-dot]', { autoAlpha: 0 })
-        gsap.set('[data-hint], [data-count]', { autoAlpha: 0 })
-        setBuilt(true)
-      } else {
-        const first = SplitText.create('[data-first]', { type: 'chars', mask: 'chars' })
-        const last = SplitText.create('[data-last-word]', { type: 'chars' })
-        const intro = SplitText.create('[data-intro]', { type: 'lines', mask: 'lines' })
-        const dot = el.querySelector<HTMLElement>('[data-dot]')!
-        const home = el.querySelector<HTMLElement>('[data-dot-home]')!
-        const period = el.querySelector<HTMLElement>('[data-period]')!
-        const countEl = el.querySelector<HTMLElement>('[data-count]')!
-        // Where the dot has to travel to land on the full stop, measured from untransformed anchors.
-        const trip = () => {
-          const a = home.getBoundingClientRect()
-          const b = period.getBoundingClientRect()
-          return { x: b.left + b.width / 2 - (a.left + a.width / 2), y: b.top + b.height / 2 - (a.top + a.height / 2), scale: b.width / a.width }
+      // ---- The scroll: the hero builds, the name splits and the window opens.
+      const buildScroll = () => {
+        // The window between the two halves of the name: a rectangle revealed with a clip path, marked at its
+        // corners with white crop marks.
+        const win = { cx: 0, cy: 0, w: 0, h: 0 }
+        const winEl = el.querySelector<HTMLElement>('[data-window]')!
+        const marks = gsap.utils.toArray<HTMLElement>('[data-mark]', el)
+        const quote = el.querySelector<HTMLElement>('[data-quote] > figure')!
+        const apply = () => {
+          const l = win.cx - win.w / 2
+          const t = win.cy - win.h / 2
+          winEl.style.clipPath = `inset(${t}px ${W() - l - win.w}px ${H() - t - win.h}px ${l}px)`
+          const at = [
+            [l, t, 1, 1],
+            [l + win.w, t, -1, 1],
+            [l, t + win.h, 1, -1],
+            [l + win.w, t + win.h, -1, -1],
+          ]
+          marks.forEach((m, i) => (m.style.transform = `translate(${at[i][0]}px, ${at[i][1]}px) scale(${at[i][2]}, ${at[i][3]})`))
         }
-        const count = { v: 0 }
+
+        const seq = { p: 0 }
         const tl = gsap.timeline({
           defaults: { ease: 'none' },
-          scrollTrigger: {
-            trigger: '[data-hero]',
-            start: 'top top',
-            end: () => `+=${innerHeight * 2.6}`,
-            pin: true,
-            scrub: 1,
-            invalidateOnRefresh: true,
-            onUpdate: (st) => setBuilt(st.progress > 0.92),
-          },
+          scrollTrigger: { trigger: hero, start: 'top top', end: () => `+=${innerHeight * 5}`, pin: true, scrub: 1, invalidateOnRefresh: true },
         })
-        tl.to(count, { v: 100, duration: 92, onUpdate: () => void (countEl.textContent = `(${String(Math.round(count.v)).padStart(2, '0')})`) }, 0)
+
+        // 1. The hero builds itself: the light pours in and the name grows into place.
+        tl.fromTo(light, { light: 0.3 }, { light: 1, duration: 18, ease: 'power1.in' }, 0)
+          .fromTo(name, { y: () => H() / 2 - nameY(), scale: small }, { y: 0, scale: 1, duration: 18, ease: 'power3.inOut' }, 0)
           .to('[data-hint]', { autoAlpha: 0, duration: 4 }, 0)
-          .to('[data-dot-ring]', { autoAlpha: 0, duration: 3 }, 2)
-          // 1. The hands slide in from the edges and point at the dot.
-          .to(handsCtl, { spread: 0, duration: 20, ease: 'power2.out' }, 2)
-          // 2. "Jasman" rises letter by letter; "Sidhu" writes itself in, left to right.
-          .from(first.chars, { yPercent: 110, duration: 7, stagger: 2.6, ease: 'power3.out' }, 20)
-          .fromTo('[data-last]', { clipPath: 'inset(-25% 100% -25% -5%)' }, { clipPath: 'inset(-25% -8% -25% -5%)', duration: 18, ease: 'power1.inOut' }, 27)
-          .from(last.chars, { yPercent: 35, rotation: -12, autoAlpha: 0, duration: 6, stagger: 2.8, ease: 'power3.out' }, 27)
-          // 3. The spark leaves the gap on an arc and lands as the full stop. The hands lean after it.
-          .to(dot, { x: () => trip().x, duration: 12, ease: 'power1.inOut' }, 46)
-          .to(dot, { y: () => Math.min(0, trip().y) - innerHeight * 0.1, duration: 5, ease: 'power2.out' }, 46)
-          .to(dot, { y: () => trip().y, duration: 7, ease: 'power2.in' }, 51)
-          .to(dot, { scale: () => trip().scale, duration: 12, ease: 'power1.inOut' }, 46)
-          .set(dot, { autoAlpha: 0 }, 58)
-          .fromTo(period, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.01 }, 58)
-          .fromTo(period, { scale: 1.6 }, { scale: 1, duration: 3, ease: 'back.out(3)' }, 58)
-          .to(handsCtl, { reach: 0.14, duration: 12, ease: 'power1.inOut' }, 46)
-          // 4. The ember light blooms behind everything.
-          .fromTo('[data-glow]', { autoAlpha: 0, scale: 0.6 }, { autoAlpha: 0.85, scale: 1, duration: 22, ease: 'power2.out' }, 57)
-          .fromTo('[data-grain]', { autoAlpha: 0 }, { autoAlpha: 0.12, duration: 12 }, 60)
-          // 5. Then the words, the menu, the rule and the numbers fill in.
-          .from(intro.lines, { yPercent: 110, duration: 8, stagger: 2, ease: 'power3.out' }, 64)
-          .from(nav, { yPercent: -140, autoAlpha: 0, duration: 6, stagger: 1.6, ease: 'power3.out' }, 66)
-          .fromTo('[data-rule]', { scaleX: 0 }, { scaleX: 1, duration: 12, ease: 'power2.inOut' }, 70)
-          .from('[data-row-item]', { yPercent: 110, duration: 6, stagger: 2.4, ease: 'power3.out' }, 74)
-          .to('[data-count]', { autoAlpha: 0, duration: 4 }, 93)
-          .to({}, { duration: 0 }, 100)
-        el.querySelectorAll<HTMLElement>('[data-fact]').forEach((f, i) => {
-          const n = { v: 0 }
-          tl.to(n, { v: Number(f.dataset.fact), duration: 10, ease: 'power2.out', onUpdate: () => void (f.textContent = String(Math.round(n.v))) }, 77 + i * 2)
+          .fromTo('[data-line] > span', { yPercent: 110 }, { yPercent: 0, duration: 8, stagger: 2, ease: 'power3.out' }, 8)
+          .fromTo('[data-rule]', { scaleX: 0 }, { scaleX: 1, duration: 9, ease: 'power2.inOut' }, 9)
+          .fromTo('[data-clock]', { autoAlpha: 0 }, { autoAlpha: 1, duration: 5 }, 11)
+        links.forEach((l, i) => tl.to(l, { scrambleText: { text: labels[i], chars: SCRAMBLE, speed: 0.6 }, duration: 5 }, 12 + i * 0.8))
+
+        // 2. The split: the name rises and its halves slide apart; a window opens between them.
+        tl.to('[data-tag], [data-bar]', { autoAlpha: 0, duration: 4 }, 28)
+          .to(name, { y: () => H() / 2 - nameY(), duration: 16, ease: 'power2.inOut' }, 30)
+          .to(first, { x: () => -(first.offsetLeft + first.offsetWidth * 0.8), duration: 18, ease: 'power2.inOut' }, 30)
+          .to(last, { x: () => W() - last.offsetLeft - last.offsetWidth * 0.2, duration: 18, ease: 'power2.inOut' }, 30)
+          .to([first, last], { opacity: 0.4, duration: 12 }, 34)
+          .fromTo(
+            win,
+            { cx: () => W() / 2, cy: nameY, w: 0, h: () => parseFloat(name.style.fontSize) * 0.5 },
+            { cy: () => H() / 2, w: () => W() * 0.6, h: () => H() * 0.52, duration: 16, ease: 'power2.inOut', onUpdate: apply },
+            32,
+          )
+
+        // 3. The motion sequence plays inside the window as it grows to fill the screen.
+        tl.to(seq, { p: 1, duration: 56, onUpdate: () => player.set(seq.p) }, 34)
+          .fromTo('[data-seq]', { scale: 1.18 }, { scale: 1, duration: 56 }, 34)
+          .to(win, { w: () => W() * 0.9, h: () => H() * 0.8, duration: 16, ease: 'power2.inOut', onUpdate: apply }, 48)
+          .to(marks, { autoAlpha: 1, duration: 4 }, 52)
+          .fromTo(quote, { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 4, ease: 'power2.out' }, 40)
+          .to([first, last], { autoAlpha: 0, duration: 8 }, 68)
+          .to(quote, { autoAlpha: 0, duration: 4 }, 70)
+          .to(win, { w: W, h: H, duration: 14, ease: 'power2.inOut', onUpdate: apply }, 72)
+          .to(marks, { autoAlpha: 0, duration: 4 }, 76)
+
+        // 4. The hands hold full screen for a beat, then scroll away as the grid comes up (no fade to black, so
+        // there's no empty screen in between). The light is hidden behind the window by now; switch it off.
+        tl.to(light, { light: 0, cursor: 0, duration: 6 }, 84).to({}, { duration: 2 }, 90)
+
+        // The grid (placeholder for now): tiles land from the middle outwards.
+        gsap.from('[data-tile] > *', {
+          scale: 0,
+          autoAlpha: 0,
+          duration: 0.9,
+          ease: 'back.out(1.6)',
+          stagger: { amount: 0.5, from: 'center', grid: [3, 3] },
+          scrollTrigger: { trigger: '[data-grid]', start: 'top 90%' },
         })
+        ScrollTrigger.refresh()
       }
 
-      // The edge labels track which section you're in and how far down the page you are.
-      gsap.utils.toArray<HTMLElement>('[data-section]').forEach((sec) =>
-        ScrollTrigger.create({ trigger: sec, start: 'top 50%', end: 'bottom 50%', onToggle: (s) => setSection(s.isActive ? sec.dataset.section! : '') }),
-      )
-      ScrollTrigger.create({ start: 0, end: 'max', onUpdate: (s) => setPct(Math.round(s.progress * 100)) })
-
-      // Words and blocks rise in.
-      gsap.utils.toArray<HTMLElement>('[data-reveal]').forEach((r) =>
-        gsap.from(r, { y: reduce ? 0 : 40, opacity: 0, duration: 1, ease: 'expo.out', scrollTrigger: { trigger: r, start: 'top 88%' } }),
-      )
-
-      // Work: the list follows the scroll and a red ribbon draws itself across.
-      const items = gsap.utils.toArray<HTMLElement>('[data-work-item]')
-      items.forEach((it, i) =>
-        gsap.timeline({
-          scrollTrigger: { trigger: it, start: 'top 55%', end: 'bottom 55%', onToggle: (s) => s.isActive && setActive(i) },
-        }),
-      )
-      const ribbon = el.querySelector<SVGPathElement>('[data-ribbon]')
-      if (ribbon) {
-        const len = ribbon.getTotalLength()
-        gsap.set(ribbon, { strokeDasharray: len, strokeDashoffset: reduce ? 0 : len })
-        if (!reduce) gsap.to(ribbon, { strokeDashoffset: 0, ease: 'none', scrollTrigger: { trigger: '[data-work]', start: 'top 70%', end: 'bottom 30%', scrub: 1 } })
-      }
-
-      // Gallery: fly through a field of screens.
-      if (!reduce) {
-        const cards = gsap.utils.toArray<HTMLElement>('[data-fly]')
-        const tl = gsap.timeline({ scrollTrigger: { trigger: '[data-gallery]', start: 'top top', end: '+=2400', pin: true, scrub: 1 } })
-        cards.forEach((c, i) => {
-          tl.fromTo(c, { z: -2600, opacity: 0 }, { z: 900, opacity: 1, ease: 'none', duration: 1 }, i * 0.18)
-          tl.to(c, { opacity: 0, duration: 0.15, ease: 'none' }, i * 0.18 + 0.85)
-        })
-        tl.from('[data-gallery-line]', { opacity: 0, y: 20, duration: 0.3 }, 0)
-      }
-
-      // Contact: the white sheet rises and squares off.
-      if (!reduce) {
-        gsap.fromTo(
-          '[data-sheet]',
-          { scale: 0.92, borderTopLeftRadius: 80, borderTopRightRadius: 80 },
-          { scale: 1, borderTopLeftRadius: 24, borderTopRightRadius: 24, ease: 'none', scrollTrigger: { trigger: '[data-sheet]', start: 'top bottom', end: 'top 30%', scrub: true } },
-        )
+      return () => {
+        gsap.ticker.remove(count)
+        links.forEach((l, i) => (l.textContent = labels[i]))
       }
     }, el)
+
+    ScrollTrigger.addEventListener('refreshInit', fit)
     return () => {
-      unfollow()
+      ScrollTrigger.removeEventListener('refreshInit', fit)
       ctx.revert()
+      player.destroy()
+      lockScroll(false)
     }
-  }, [])
+  }, [light])
+
+  const go = () => scrollToTarget('#grid')
 
   return (
     <main ref={root}>
-      {/* Edge labels: scroll progress on the left, the current section on the right */}
-      <p aria-hidden className={`pointer-events-none fixed left-4 top-1/2 z-40 hidden -translate-y-1/2 type-label text-snow mix-blend-difference transition-opacity duration-500 md:block ${built ? 'opacity-100' : 'opacity-0'}`}>
-        ({String(pct).padStart(2, '0')})
-      </p>
-      <p aria-hidden className={`pointer-events-none fixed right-4 top-1/2 z-40 hidden -translate-y-1/2 type-label text-snow mix-blend-difference transition-opacity duration-500 md:block ${built ? 'opacity-100' : 'opacity-0'}`}>
-        <span key={section} className="animate-fade-up inline-block">
-          {section}
-        </span>
-      </p>
-      {/* Hero: built by the scroll, from a single red dot */}
-      <section id="top" data-hero className="relative h-[100svh] overflow-hidden">
-        <div data-glow aria-hidden className="absolute inset-0">
-          <div data-blobs className="absolute inset-0 blur-[90px]">
-            <div data-blob className="absolute left-[18%] top-[-10%] size-[55vw] rounded-full bg-ember opacity-90" />
-            <div data-blob className="absolute left-[48%] top-[5%] size-[40vw] rounded-full bg-[#FF8A3D] opacity-70" />
-            <div data-blob className="absolute left-[30%] top-[35%] size-[45vw] rounded-full bg-[#1a0604]" />
-          </div>
-        </div>
-        <div data-grain aria-hidden className="grain absolute inset-0 opacity-[0.12] mix-blend-overlay" />
-        <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-night" />
+      <section data-hero className="relative h-[100svh] overflow-hidden bg-ink">
+        <HeroLight control={light} className="absolute inset-0 block h-full w-full" />
 
-        {/* The hands, pointing at the spark */}
-        <Hands control={handsCtl} className="absolute inset-x-0 top-[10vh] z-10 block h-[min(52vh,520px)] w-full" />
-
-        {/* The spark: where the fingertips meet, and later the full stop */}
-        <span data-dot-home aria-hidden className="pointer-events-none absolute left-1/2 top-[calc(10vh+min(52vh,520px)*0.46)] size-[18px] -translate-x-1/2 -translate-y-1/2" />
-        <span data-dot aria-hidden className="pointer-events-none absolute left-1/2 top-[calc(10vh+min(52vh,520px)*0.46)] z-20 -ml-[9px] -mt-[9px] size-[18px] rounded-full bg-ember shadow-[0_0_24px_4px_rgba(255,59,31,0.55)]">
-          <span data-dot-ring className="absolute inset-[-10px] animate-ping rounded-full border border-ember/70" />
-        </span>
-        <p data-count aria-hidden className="pointer-events-none absolute left-1/2 top-[calc(10vh+min(52vh,520px)*0.46+34px)] z-20 -translate-x-1/2 type-label text-snow/70">
-          (00)
-        </p>
-        <p data-hint aria-hidden className="pointer-events-none absolute bottom-8 left-1/2 z-20 -translate-x-1/2 type-label">
-          Scroll to begin
-        </p>
-
-        <p data-intro className="absolute left-5 top-14 z-10 max-w-[260px] text-[12px] leading-snug text-snow/85 md:top-5">
-          Jasman Sidhu, software engineer, building useful products through code, AI and a lot of iteration.
-        </p>
-
-        <div className="absolute inset-x-5 bottom-8 z-10">
-          <HeroName className="text-[13.6vw] md:text-[clamp(4rem,15.5vw,17rem)]" />
-          <div data-rule className="mt-5 h-px origin-left bg-snow/30" />
-          <div className="mt-3 flex items-start justify-between gap-6 text-[12px] text-snow/70">
-            <span className="overflow-hidden">
-              <span data-row-item className="block">
-                Oakland University · CS, AI concentration
-              </span>
-            </span>
-            <span className="hidden overflow-hidden md:block">
-              <span data-row-item className="flex gap-6">
-                {FACTS.map((f) => (
-                  <span key={f.label}>
-                    <span data-fact={f.n} className="text-snow">
-                      {f.n}
+        {/* The loader: an odometer counting to 100 */}
+        <div data-loader aria-hidden className="pointer-events-none absolute inset-0 z-40 grid place-items-center">
+          <p data-count className="flex font-mono text-[clamp(40px,4.4vw,68px)] font-light leading-none text-paper">
+            {[0, 1, 2].map((d) => (
+              <span key={d} className="relative block h-[1em] w-[0.62em] overflow-hidden">
+                <span data-wheel className="absolute inset-x-0 top-0 block text-center">
+                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((n, i) => (
+                    <span key={i} className="block h-[1em] leading-[1em]">
+                      {n}
                     </span>
-                    <span className="text-snow">{f.suffix}</span> {f.label}
-                  </span>
-                ))}
-              </span>
-            </span>
-            <span className="overflow-hidden text-right">
-              <span data-row-item className="block">
-                Sterling Heights, MI
-              </span>
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* About */}
-      <section id="about" data-section="About" className="px-5 pb-32 pt-16">
-        <SectionHead n="01">About</SectionHead>
-        <div className="mt-12 grid gap-12 md:grid-cols-[1.3fr_1fr] md:gap-20">
-          <div>
-            <p data-reveal className="max-w-[18ch] text-[clamp(2rem,4.2vw,4.4rem)] font-medium leading-[1.02] tracking-[-0.035em]">
-              As a <span className="em">software engineer</span>, I build products that take <span className="em">what people have</span> and hand back something useful.
-            </p>
-            <p data-reveal className="mt-12 max-w-[42ch] text-[14px] leading-relaxed text-snow/75 md:ml-[20%]">
-              {ABOUT}
-            </p>
-          </div>
-          <figure data-reveal className="relative overflow-hidden rounded-tl-[120px] rounded-br-[24px]">
-            <img src="/jasman1.jpg" alt="A painted portrait of Jasman" className="aspect-[4/5] w-full object-cover grayscale" />
-            <div className="absolute inset-0 bg-ember mix-blend-multiply opacity-80" />
-            <div className="absolute inset-0 bg-gradient-to-t from-night/70 to-transparent" />
-            <figcaption className="absolute bottom-4 left-4 type-label text-snow/80">Self portrait, painted</figcaption>
-          </figure>
-        </div>
-      </section>
-
-      {/* Work */}
-      <section id="work" data-section="Projects" data-work className="relative px-5 pb-32">
-        <svg aria-hidden viewBox="0 0 1440 1600" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 h-full w-full">
-          <path
-            data-ribbon
-            d="M-60 180 C 300 120, 520 420, 380 700 S 520 1180, 900 1040 S 1500 760, 1500 1260"
-            fill="none"
-            stroke="#FF3B1F"
-            strokeWidth="70"
-            strokeLinecap="round"
-          />
-        </svg>
-        <div className="relative">
-          <SectionHead n="02">Selected projects</SectionHead>
-          <div className="mt-12 grid gap-10 md:grid-cols-[1.2fr_1fr]">
-            <ol>
-              {WORK.map((w, i) => (
-                <li key={w.slug} data-work-item className="flex h-[30vh] min-h-[160px] items-center">
-                  <TransitionLink
-                    to={`/work/${w.slug}`}
-                    label={w.name}
-                    onMouseEnter={() => setActive(i)}
-                    data-cursor="view"
-                    data-cursor-label="See"
-                    data-cursor-color="#FF3B1F"
-                    className={`text-[clamp(2.6rem,6vw,6.5rem)] font-medium leading-none tracking-[-0.04em] transition-colors duration-500 ${
-                      active === i ? 'text-snow' : 'text-snow/20'
-                    }`}
-                  >
-                    {w.name}
-                    <span className="em ml-3 text-[0.45em] text-ash">{w.platform}</span>
-                  </TransitionLink>
-                </li>
-              ))}
-            </ol>
-            <div className="hidden md:block">
-              <div className="sticky top-[20vh]">
-                <div className="flex justify-between type-label">
-                  <span>{WORK[active].type}</span>
-                  <span>Preview</span>
-                </div>
-                <div className="relative mt-3 aspect-[4/3] overflow-hidden rounded-[18px]">
-                  {WORK.map((w, i) => (
-                    <img
-                      key={w.slug}
-                      src={w.still}
-                      alt=""
-                      className={`absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-700 ${active === i ? 'scale-100 opacity-100' : 'scale-110 opacity-0'}`}
-                    />
                   ))}
-                </div>
-                <p key={WORK[active].slug} className="animate-fade-up mt-4 max-w-[40ch] text-snow/80">
-                  {WORK[active].tagline} <span className="text-ash">{WORK[active].summary}</span>
-                </p>
-                <TransitionLink to={`/work/${WORK[active].slug}`} label={WORK[active].name} className="mt-4 inline-flex items-center gap-2 type-label text-snow hover:text-ember">
-                  See project <span aria-hidden>→</span>
-                </TransitionLink>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Gallery fly-through */}
-      <section id="gallery" data-section="Gallery" data-gallery className="relative h-[100svh] overflow-hidden [perspective:900px]">
-        <div className="absolute inset-0 [transform-style:preserve-3d]">
-          {GALLERY.map((src, i) => {
-            const angle = i * 2.4
-            const r = 26 + (i % 3) * 8
-            return (
-              <img
-                key={i}
-                data-fly
-                src={src}
-                alt=""
-                className="absolute left-1/2 top-1/2 w-[clamp(140px,16vw,260px)] rounded-[10px] object-cover shadow-2xl"
-                style={{ aspectRatio: '16/10', marginLeft: `${Math.cos(angle) * r}vw`, marginTop: `${Math.sin(angle) * r * 0.6}vh`, translate: '-50% -50%' }}
-              />
-            )
-          })}
-        </div>
-        <p data-gallery-line className="absolute left-1/2 top-1/2 w-[min(520px,85vw)] -translate-x-1/2 -translate-y-1/2 text-center text-[clamp(1.4rem,2.2vw,2.1rem)] leading-tight tracking-[-0.02em]">
-          Every project is a chance to <span className="em">learn</span>, <span className="em">ship</span> and push my limits.
-        </p>
-      </section>
-
-      {/* Skills */}
-      <section id="skills" data-section="Skills" className="px-5 pb-32 pt-24">
-        <SectionHead n="03">Skills</SectionHead>
-        <div className="mt-12 grid gap-12 md:grid-cols-2">
-          <div data-reveal>
-            <p className="max-w-[26ch] text-[clamp(1.2rem,1.8vw,1.7rem)] font-bold uppercase leading-[1.05] tracking-[-0.01em]">
-              Computer science student at Oakland University, concentrating in AI, shipping products people actually use.
-            </p>
-            <a href={`mailto:${LINKS.email}`} className="mt-6 inline-block type-label text-snow hover:text-ember">
-              Contact me ●
-            </a>
-            <svg viewBox="0 0 120 60" aria-hidden className="mt-16 w-[110px] text-ember">
-              <path d="M0 30h104M78 6l26 24-26 24" fill="none" stroke="currentColor" strokeWidth="9" />
-            </svg>
-          </div>
-          <ul data-reveal>
-            {SKILLS.map((g) => {
-              const isOpen = open === g.group
-              return (
-                <li key={g.group} className="border-b border-line">
-                  <button
-                    type="button"
-                    aria-expanded={isOpen}
-                    onClick={() => setOpen(isOpen ? null : g.group)}
-                    className="flex w-full items-center justify-between py-4 text-left text-[clamp(1.1rem,1.6vw,1.5rem)] tracking-[-0.02em] hover:text-ember"
-                  >
-                    {g.group}
-                    <span className={`text-ash transition-transform duration-300 ${isOpen ? 'rotate-45' : ''}`}>+</span>
-                  </button>
-                  <div className={`grid transition-[grid-template-rows] duration-500 ${isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
-                    <p className="overflow-hidden text-snow/70">
-                      <span className="block pb-4">{g.items.join(' · ')}</span>
-                    </p>
-                  </div>
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-
-        {/* Experience table */}
-        <div data-reveal className="mt-28">
-          <p className="type-label mb-3">Experience & education</p>
-          {[
-            ...EXPERIENCE.map((j) => [j.org, j.role, j.place, j.time]),
-            ['Oakland University', 'B.S. Computer Science, AI concentration', 'Rochester, MI', 'Graduating May 2027'],
-          ].map(([a, b, c, d]) => (
-            <div key={a} className="grid grid-cols-2 gap-2 border-t border-line px-2 py-3 text-[13px] transition-colors duration-200 hover:bg-snow hover:text-night md:grid-cols-4">
-              <span>{a}</span>
-              <span>{b}</span>
-              <span className="text-ash">{c}</span>
-              <span className="text-ash md:text-right">{d}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Contact sheet */}
-      <section id="contact" data-section="Contact" className="px-2 md:px-3">
-        <div data-sheet className="origin-bottom overflow-hidden rounded-t-[24px] bg-snow px-5 pb-16 pt-10 text-night md:px-10">
-          <div className="flex items-center justify-between">
-            <span className="type-label">Contact</span>
-            <Counter n="04" />
-          </div>
-          <h2 className="mt-10 text-[clamp(4rem,12vw,12rem)] font-semibold leading-[0.85] tracking-[-0.05em]">Contact</h2>
-          <div className="mt-14 grid gap-12 md:grid-cols-2">
-            <div>
-              <p className="type-label">Open to internships, freelance work and collaborations</p>
-              <a href={`mailto:${LINKS.email}`} className="mt-3 block break-all text-[clamp(1.6rem,3vw,2.8rem)] font-medium tracking-[-0.03em] hover:text-ember">
-                {LINKS.email}
-              </a>
-            </div>
-            <div className="h-[340px] rounded-[16px] bg-night text-snow">
-              <AskChat />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer: the hands */}
-      <footer className="relative overflow-hidden px-5 pt-6">
-        <div className="relative z-10 grid grid-cols-3 text-[12px] uppercase">
-          <p>
-            {LINKS.email}
-            <br />© {new Date().getFullYear()}
-          </p>
-          <p className="flex flex-col">
-            <a href={LINKS.github} target="_blank" rel="noreferrer" className="hover:text-ember">
-              GitHub
-            </a>
-            <a href={LINKS.linkedin} target="_blank" rel="noreferrer" className="hover:text-ember">
-              LinkedIn
-            </a>
-            <a href={LINKS.resume} target="_blank" rel="noreferrer" className="hover:text-ember">
-              Resume
-            </a>
-          </p>
-          <p className="flex flex-col items-end">
-            {[
-              ['Work', '#work'],
-              ['About', '#about'],
-              ['Contact', '#contact'],
-            ].map(([l, h]) => (
-              <button key={l} type="button" onClick={() => scrollToTarget(h)} className="uppercase hover:text-ember">
-                {l}
-              </button>
+                </span>
+              </span>
             ))}
           </p>
         </div>
-        <Hands className="relative -mt-4 block h-[min(52vh,520px)] w-full" />
-        <Name className="relative z-10 -mt-[6vw] pb-4 text-[clamp(4rem,15.5vw,17rem)]" />
-      </footer>
+
+        {/* The window that opens between the halves of the name */}
+        <div data-window className="absolute inset-0 z-10 overflow-hidden [clip-path:inset(50%)]">
+          <canvas data-seq aria-hidden className="absolute inset-0 block h-full w-full" />
+        </div>
+        {/* Crop marks at the window's corners */}
+        {['tl', 'tr', 'bl', 'br'].map((k) => (
+          <span key={k} data-mark aria-hidden className="invisible absolute left-0 top-0 z-30 block opacity-0">
+            <span className="absolute left-[-34px] top-[-1px] block h-[2px] w-[24px] bg-paper" />
+            <span className="absolute left-[-1px] top-[-34px] block h-[24px] w-[2px] bg-paper" />
+          </span>
+        ))}
+
+        {/* A quote in the middle of the window from when it opens until just before the hands touch */}
+        <div data-quote className="pointer-events-none absolute inset-0 z-30 grid place-items-center px-6">
+          <figure className="invisible max-w-[56vw] text-center opacity-0 [text-shadow:0_0_28px_rgba(0,0,0,0.85)]">
+            <blockquote className="font-serif text-[20px] italic leading-tight text-paper [-webkit-text-stroke:0.03em_currentColor] md:text-[36px]">
+              “What I cannot create, I do not understand.”
+            </blockquote>
+            <figcaption className="mt-3 font-mono text-[12px] uppercase tracking-[0.06em] text-accent md:text-[13px]">Richard Feynman</figcaption>
+          </figure>
+        </div>
+
+        <p data-tag className="absolute left-5 top-5 z-20 max-w-[34ch] text-[15px] leading-[1.35] text-paper md:left-8 md:top-8 md:text-[17px]">
+          <span data-line className="block overflow-hidden">
+            <span className="block">
+              Software engineer, <em className="font-serif text-[1.14em] italic">building AI tools</em>,
+            </span>
+          </span>
+          <span data-line className="block overflow-hidden">
+            <span className="block">from the first commit to production.</span>
+          </span>
+        </p>
+
+        <h1
+          data-name
+          aria-label="Jasman Sidhu"
+          className="pointer-events-none absolute inset-x-0 bottom-[68px] z-[5] flex items-baseline justify-between whitespace-nowrap px-5 leading-[0.8] text-paper md:bottom-[84px] md:px-8"
+        >
+          <span data-first className="font-sans font-[450] tracking-[-0.055em]">
+            Jasman
+          </span>
+          <span data-last className="font-serif text-[1.06em] italic tracking-[-0.02em]">
+            Sidhu<span className="text-accent">.</span>
+          </span>
+        </h1>
+
+        <div data-bar className="absolute inset-x-5 bottom-5 z-20 md:inset-x-8 md:bottom-6">
+          <div data-rule className="h-px bg-paper/30" />
+          <div className="mt-3.5 flex items-center justify-between text-[12px] uppercase tracking-[0.02em] text-paper md:grid md:grid-cols-3 md:text-[14px]">
+            <p data-clock className="whitespace-nowrap">
+              → <span className="hidden md:inline">Sterling Heights, </span>MI <span className="text-paper/55">{time}</span>
+            </p>
+            <nav aria-label="Profiles" className="hidden items-center justify-center gap-4 md:flex">
+              <a data-scramble href={LINKS.github} target="_blank" rel="noreferrer" className="hover:text-accent">
+                GitHub
+              </a>
+              <span className="text-paper/35">/</span>
+              <a data-scramble href={LINKS.linkedin} target="_blank" rel="noreferrer" className="hover:text-accent">
+                LinkedIn
+              </a>
+              <span className="text-paper/35">/</span>
+              <a data-scramble href={LINKS.resume} target="_blank" rel="noreferrer" className="hover:text-accent">
+                Résumé
+              </a>
+            </nav>
+            <nav aria-label="Main" className="flex justify-end gap-5 md:gap-8">
+              {['Work', 'About', 'Contact'].map((label) => (
+                <button key={label} data-scramble type="button" onClick={go} className="uppercase hover:text-accent">
+                  {label}
+                </button>
+              ))}
+            </nav>
+          </div>
+        </div>
+
+        <p data-hint aria-hidden className="invisible absolute bottom-6 left-1/2 z-20 -translate-x-1/2 type-label opacity-0">
+          Scroll
+        </p>
+      </section>
+
+      {/* Placeholder for the grid, the next thing we build */}
+      <section id="grid" data-grid className="relative grid h-[100svh] grid-cols-3 grid-rows-3 bg-ink">
+        {TILES.map((t, i) => (
+          <div key={t} data-tile className={`grid place-items-center border-[#1d1d1d] ${i % 3 < 2 ? 'border-r' : ''} ${i < 6 ? 'border-b' : ''}`}>
+            {t === 'J' ? (
+              <span className="font-sans text-[16vmin] font-[450] leading-none tracking-[-0.05em]">J</span>
+            ) : t === 'S' ? (
+              <span className="font-serif text-[17vmin] italic leading-none">S</span>
+            ) : (
+              <span className="type-label">{t}</span>
+            )}
+          </div>
+        ))}
+        <p className="absolute bottom-4 left-1/2 -translate-x-1/2 type-label">grid · placeholder until we build it</p>
+      </section>
     </main>
   )
 }

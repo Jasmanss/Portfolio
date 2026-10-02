@@ -3,8 +3,9 @@ import Lenis from 'lenis'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SplitText } from 'gsap/SplitText'
+import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin'
 
-gsap.registerPlugin(ScrollTrigger, SplitText)
+gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin)
 
 export const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -19,11 +20,20 @@ export function scrollToTarget(target: number | string | HTMLElement, immediate 
   else (typeof target === 'string' ? document.querySelector(target) : target)?.scrollIntoView()
 }
 
+// Holds the page still (e.g. while the loader runs) and lets it go again.
+let locked = false
+export function lockScroll(lock: boolean) {
+  locked = lock
+  if (lenis) lock ? lenis.stop() : lenis.start()
+  document.documentElement.style.overflow = lock ? 'hidden' : ''
+}
+
 // Smooth scrolling driven by GSAP's ticker so ScrollTrigger and Lenis stay in lockstep.
 export function useSmoothScroll() {
   useEffect(() => {
     if (prefersReducedMotion()) return
     lenis = new Lenis({ lerp: 0.1 })
+    if (locked) lenis.stop()
     lenis.on('scroll', ScrollTrigger.update)
     const raf = (time: number) => lenis?.raf(time * 1000)
     gsap.ticker.add(raf)

@@ -38,17 +38,32 @@ const load = (src: string) =>
     img.src = src
   })
 
-// What a parent can steer instead of the built-in scroll: how close the fingertips are (reach, 0..1)
-// and how far both hands are pushed out past the edges (spread, 0 = in place, 1 = off screen).
-export type HandsControl = { reach: number; spread: number }
+// What a parent can steer instead of the built-in scroll: how close the fingertips are (reach, 0..1),
+// how far both hands are pushed out past the edges (spread, 0 = in place, 1 = off screen), how much the
+// gap between the fingertips crackles (charge, 0..1) and how bright the hands are (dim, 0..1).
+export type HandsControl = { reach: number; spread: number; charge?: number; dim?: number }
+export type RGB = [number, number, number]
+
+type Props = {
+  className?: string
+  control?: HandsControl
+  // How much of the width each hand spans.
+  size?: number
+  human?: RGB
+  robot?: RGB
+  // The colour of the energy between them: the crackle across the gap and the spark.
+  energy?: RGB
+}
 
 // A human hand and a robot hand, drawn in characters, reaching for each other.
 // They close the gap as the footer scrolls into view (or as `control` says), lean toward the cursor,
 // scatter into noise where the cursor passes, and spark when their fingertips meet.
-export default function Hands({ className = '', control }: { className?: string; control?: HandsControl }) {
+export default function Hands({ className = '', control, size = 0.46, human: humanColour, robot: robotColour, energy }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null)
   const ctl = useRef(control)
   ctl.current = control
+  const colours = useRef<[RGB, RGB, RGB]>([humanColour ?? HUMAN.colour, robotColour ?? ROBOT.colour, energy ?? [255, 200, 120]])
+  colours.current = [humanColour ?? HUMAN.colour, robotColour ?? ROBOT.colour, energy ?? [255, 200, 120]]
 
   useEffect(() => {
     const cv = canvas.current
@@ -64,10 +79,10 @@ export default function Hands({ className = '', control }: { className?: string;
     let imgs: [HTMLImageElement, HTMLImageElement] | null = null
     const reduce = prefersReducedMotion()
 
-    // Each hand spans about 46% of the width, sampled at the character grid.
+    // Each hand spans `size` of the width, sampled at the character grid.
     const layout = () => {
       if (!imgs) return
-      const handCols = Math.floor((W * 0.46) / CW)
+      const handCols = Math.floor((W * size) / CW)
       const rowsFor = (img: HTMLImageElement) => Math.max(4, Math.round(((handCols * CW) / img.width) * img.height / CH))
       human = sample(imgs[0], handCols, rowsFor(imgs[0]))
       robot = sample(imgs[1], handCols, rowsFor(imgs[1]))
@@ -131,10 +146,11 @@ export default function Hands({ className = '', control }: { className?: string;
         gsap.fromTo(state, { spark: 1 }, { spark: 0, duration: 1.6, ease: 'power2.out' })
       } else if (gap > CW * 8) touched = false
 
-      const paint = (hand: Sampled, spec: Hand, tipXpx: number, tipYpx: number) => {
+      const dim = c?.dim ?? 1
+      const paint = (hand: Sampled, spec: Hand, tipXpx: number, tipYpx: number, colour: RGB) => {
         const originX = tipXpx - spec.tipX * hand.w * CW
         const originY = tipYpx - spec.tipY * hand.h * CH
-        const [r, g, b] = spec.colour
+        const [r, g, b] = colour
         for (let j = 0; j < hand.h; j++) {
           const py = originY + j * CH
           if (py < -CH || py > H) continue
@@ -149,22 +165,46 @@ export default function Hands({ className = '', control }: { className?: string;
             let ch = RAMP[Math.min(RAMP.length - 1, Math.floor(l * RAMP.length))]
             if (stir > 0.15 && Math.random() < stir) ch = NOISE[(Math.random() * NOISE.length) | 0]
             else if (!reduce && Math.random() < 0.015) ch = NOISE[(Math.random() * NOISE.length) | 0]
-            const a = Math.min(1, 0.4 + l * 0.8 + stir * 0.4)
+            const a = Math.min(1, 0.4 + l * 0.8 + stir * 0.4) * dim
             ctx.fillStyle = `rgba(${r},${g},${b},${a})`
             ctx.fillText(ch, px, py + (stir ? (Math.random() - 0.5) * stir * 6 : 0))
           }
         }
       }
-      paint(human, HUMAN, W / 2 - gap / 2, tipY + bob)
-      paint(robot, ROBOT, W / 2 + gap / 2, tipY - bob)
+      const [hc, rc, ec] = colours.current
+      paint(human, HUMAN, W / 2 - gap / 2, tipY + bob, hc)
+      paint(robot, ROBOT, W / 2 + gap / 2, tipY - bob, rc)
+
+      // The charge: arcs of characters crackling across the gap, more of them and wilder as the
+      // fingertips close in. Each arc is a jagged walk from one fingertip to the other.
+      const charge = c?.charge ?? 0
+      if (charge > 0.02 && gap > CW * 2 && !reduce) {
+        const from = W / 2 - gap / 2
+        const steps = Math.max(2, Math.floor(gap / CW))
+        const arcs = 1 + Math.round(charge * 3)
+        for (let a = 0; a < arcs; a++) {
+          let y = 0
+          for (let k = 0; k <= steps; k++) {
+            // Pinned at both fingertips, free to wander in the middle.
+            const pin = Math.sin((k / steps) * Math.PI)
+            y += (Math.random() - 0.5) * CH * (0.8 + charge * 1.8)
+            y *= 0.92
+            if (Math.random() > 0.55 + charge * 0.45) continue
+            const alpha = (0.35 + charge * 0.65) * (a === 0 ? 1 : 0.55)
+            ctx.fillStyle = `rgba(${ec[0]},${ec[1]},${ec[2]},${alpha})`
+            ctx.fillText(NOISE[(Math.random() * NOISE.length) | 0], from + k * CW, tipY + y * pin)
+          }
+        }
+      }
 
       // The spark: characters bursting out of the meeting point.
       if (state.spark > 0.01) {
-        const n = Math.round(60 * state.spark)
+        const n = Math.round(90 * state.spark)
         for (let k = 0; k < n; k++) {
           const ang = Math.random() * Math.PI * 2
-          const rad = (1 - state.spark) * 160 * Math.random() + 4
-          ctx.fillStyle = `rgba(255,${180 + ((Math.random() * 75) | 0)},120,${state.spark})`
+          const rad = (1 - state.spark) * 260 * Math.random() + 4
+          const hot = Math.random() < 0.75
+          ctx.fillStyle = hot ? `rgba(${ec[0]},${ec[1]},${ec[2]},${state.spark})` : `rgba(${hc[0]},${hc[1]},${hc[2]},${state.spark})`
           ctx.fillText(Math.random() < 0.5 ? '*' : '+', W / 2 + Math.cos(ang) * rad, tipY + Math.sin(ang) * rad * 0.6)
         }
       }

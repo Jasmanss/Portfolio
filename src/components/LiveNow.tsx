@@ -54,6 +54,17 @@ const ago = (iso: string) => {
   return `${Math.round(hours / 24)}d ago`
 }
 
+// The repo of your most recent public push, or null while loading / if GitHub is unreachable.
+export function useLatestRepo() {
+  const [latest, setLatest] = useState<{ repo: string; at: string } | null>(null)
+  useEffect(() => {
+    loadActivity().then((items) => items[0] && setLatest({ repo: items[0].repo, at: items[0].at }), () => {})
+  }, [])
+  return latest
+}
+
+export { ago }
+
 export function LocalTime() {
   const format = () =>
     new Intl.DateTimeFormat('en-US', { timeZone: NOW.timeZone, hour: 'numeric', minute: '2-digit' }).format(new Date())

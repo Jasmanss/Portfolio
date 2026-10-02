@@ -1,4 +1,4 @@
-import { useLayoutEffect } from 'react'
+import { lazy, Suspense, useLayoutEffect } from 'react'
 import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom'
 import Frame from './components/Frame'
 import { TransitionProvider } from './components/Transition'
@@ -9,6 +9,8 @@ import Entry from './pages/Entry'
 import NotFound from './pages/NotFound'
 import { scrollToTarget, useSmoothScroll } from './lib/motion'
 
+const FrameLab = lazy(() => import('./pages/lab/FrameLab'))
+
 // Arriving at /#work from a project page or a shared link lands on that section.
 function Home() {
   const { hash } = useLocation()
@@ -18,17 +20,31 @@ function Home() {
   return <HomePage />
 }
 
+// Lab pages recreate references as-is, so they keep the native cursor.
+function SiteCursor() {
+  const { pathname } = useLocation()
+  return pathname.startsWith('/lab') ? null : <Cursor />
+}
+
 export default function PortfolioPage() {
   useSmoothScroll()
   return (
     <BrowserRouter>
       <TransitionProvider>
         <Frame />
-        <Cursor />
+        <SiteCursor />
         <Konami />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/work/:slug" element={<Entry />} />
+          <Route
+            path="/lab/frame"
+            element={
+              <Suspense fallback={null}>
+                <FrameLab />
+              </Suspense>
+            }
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </TransitionProvider>

@@ -1,13 +1,20 @@
 @import '@fontsource-variable/inter-tight';
+@import '@fontsource/instrument-serif/400.css';
 @import '@fontsource/instrument-serif/400-italic.css';
+@import '@fontsource-variable/geist-mono';
 @import 'lenis/dist/lenis.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* The one accent colour (clear sky blue), as an RGB triplet so Tailwind can add alpha. */
+  --accent: 77 163 255;
+}
+
 body {
-  @apply bg-night text-snow font-sans antialiased text-[14px] leading-[1.45];
+  @apply bg-ink text-paper font-sans antialiased text-[14px] leading-[1.45];
 }
 
 /* The custom cursor replaces the system one on fine pointers; text fields keep their caret. */
@@ -21,12 +28,12 @@ html.has-cursor textarea {
 }
 
 ::selection {
-  background: #ff3b1f;
-  color: #0d0d0d;
+  background: rgb(var(--accent));
+  color: #0a0a0a;
 }
 
 :focus-visible {
-  outline: 1px solid #ff3b1f;
+  outline: 1px solid rgb(var(--accent));
   outline-offset: 4px;
 }
 
@@ -38,12 +45,12 @@ html.has-cursor textarea {
 }
 
 @layer utilities {
-  /* An italic serif word dropped into sans text. */
   .em {
-    @apply font-serif italic font-normal tracking-normal;
+    @apply text-accent;
   }
+  /* Small mono labels, the voice of everything that decodes in. */
   .type-label {
-    @apply text-[11px] uppercase tracking-[0.02em] text-ash;
+    @apply font-mono text-[11px] uppercase tracking-[0.06em] text-mute;
   }
   .animate-fade-up {
     animation: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
