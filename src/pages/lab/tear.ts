@@ -175,6 +175,10 @@ export type Tear = {
   setProgress(rooms: number): void
   // Paints the erased areas back in.
   restore(): void
+  // Share of the painting erased so far (0..1).
+  coverage(): number
+  // Stops drawing while the painting is hidden.
+  setActive(on: boolean): void
   destroy(): void
 }
 
@@ -228,7 +232,8 @@ export function createTear(canvas: HTMLCanvasElement, paintings: Painting[], { o
   // What's been erased, on a small 2D canvas uploaded every frame. It's kept until the surface painting changes.
   const MS = 2
   const mask = document.createElement('canvas')
-  const mctx = mask.getContext('2d')!
+  // Read back now and then to measure how much has been erased.
+  const mctx = mask.getContext('2d', { willReadFrequently: true })!
   const maskTex = tex(gl.LINEAR)
   const clearMask = () => {
     mctx.globalCompositeOperation = 'source-over'
@@ -338,6 +343,7 @@ export function createTear(canvas: HTMLCanvasElement, paintings: Painting[], { o
   canvas.addEventListener('pointerleave', onLeave)
 
   let rooms = 0
+  let active = true
   let surface = 0
   let healing = 0
   let parX = 0
@@ -350,7 +356,7 @@ export function createTear(canvas: HTMLCanvasElement, paintings: Painting[], { o
     raf = requestAnimationFrame(frame)
     const dt = Math.min(0.05, (now - prev) / 1000)
     prev = now
-    if (loaded < paintings.length) return
+    if (loaded < paintings.length || !active) return
 
     const radius = brushRadius(style, cssW, cssH)
     for (const p of pts) {
@@ -468,6 +474,16 @@ export function createTear(canvas: HTMLCanvasElement, paintings: Painting[], { o
     },
     restore() {
       healing = 0.6
+    },
+    coverage() {
+      const d = mctx.getImageData(0, 0, mask.width, mask.height).data
+      let on = 0
+      for (let i = 0; i < d.length; i += 16) if (d[i] > 127) on++
+      return on / (d.length / 16)
+    },
+    setActive(on) {
+      active = on
+      prev = performance.now()
     },
     destroy() {
       alive = false
