@@ -52,6 +52,15 @@ html.has-cursor textarea {
   .type-label {
     @apply font-mono text-[11px] uppercase tracking-[0.06em] text-mute;
   }
+  /* The grid's illustrations are printed through a 4px halftone; --dot is the dot radius, which the grid animates
+     (small at rest, merged into solid ink when a tile is pointed at). */
+  .halftone {
+    --dot: 1.15px;
+    -webkit-mask-image: radial-gradient(circle, #000 var(--dot), transparent calc(var(--dot) + 0.6px));
+    mask-image: radial-gradient(circle, #000 var(--dot), transparent calc(var(--dot) + 0.6px));
+    -webkit-mask-size: 4px 4px;
+    mask-size: 4px 4px;
+  }
   .animate-fade-up {
     animation: fade-up 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
   }

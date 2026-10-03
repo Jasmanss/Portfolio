@@ -136,9 +136,8 @@ export default function HeroLight({ control, className = '' }: Props) {
     let dpr = 1
     const resize = () => {
       dpr = Math.min(window.devicePixelRatio || 1, 1.5)
-      const r = cv.getBoundingClientRect()
-      cv.width = Math.max(1, Math.round(r.width * dpr))
-      cv.height = Math.max(1, Math.round(r.height * dpr))
+      cv.width = Math.max(1, Math.round(cv.clientWidth * dpr))
+      cv.height = Math.max(1, Math.round(cv.clientHeight * dpr))
       gl.viewport(0, 0, cv.width, cv.height)
       gl.uniform2f(uRes, cv.width, cv.height)
       gl.uniform1f(uDpr, dpr)
@@ -186,12 +185,15 @@ export default function HeroLight({ control, className = '' }: Props) {
       gl.drawArrays(gl.TRIANGLES, 0, 3)
     }
     raf = requestAnimationFrame(frame)
-    window.addEventListener('resize', resize)
+    // Watch the canvas itself, not the window: after a rotation the pinned hero gets its new size a moment after
+    // the window's resize event, and sizing early left the light stretched.
+    const ro = new ResizeObserver(resize)
+    ro.observe(cv)
     return () => {
       alive = false
       cancelAnimationFrame(raf)
       io.disconnect()
-      window.removeEventListener('resize', resize)
+      ro.disconnect()
       window.removeEventListener('pointermove', move)
       document.removeEventListener('pointerleave', leave)
       gl.deleteProgram(prog)

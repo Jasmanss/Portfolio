@@ -15,8 +15,8 @@ export type Project = {
   summary: string
   highlights: string[]
   stack: string[]
-  image: string
-  imageAlt: string
+  image?: string
+  imageAlt?: string
   live?: string
   code?: string
   video?: string
@@ -77,6 +77,21 @@ export const PROJECTS: Project[] = [
     image: '/hairstyl.jpg',
     imageAlt: 'HairStyl app wordmark',
     code: 'https://github.com/Jasmanss/HairStyl',
+  },
+  {
+    slug: 'haven',
+    title: 'Haven',
+    kind: 'Private finance tracker for a household',
+    input: 'a checking account, two credit cards and a brokerage, all in different apps',
+    output: 'one dashboard with net worth, spending and holdings, kept in sync on its own',
+    summary:
+      'A private finance dashboard for a two-person household: bank, card and brokerage accounts connect through Plaid and stay in sync on their own.',
+    highlights: [
+      'Next.js and Supabase, with Plaid pulling transactions by incremental cursor sync and investment holdings into one shared dashboard.',
+      'Plaid webhooks sync an account the moment it has new activity; every webhook is verified (signed JWT, freshness check, body hash) before it is trusted.',
+      'Sign-ups are locked to an allowlist by a database trigger, so only the two household members can ever create an account.',
+    ],
+    stack: ['Next.js', 'TypeScript', 'Supabase', 'PostgreSQL', 'Plaid', 'Vercel'],
   },
   {
     slug: 'callback',

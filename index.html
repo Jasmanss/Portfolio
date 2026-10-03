@@ -10,6 +10,18 @@
       content="Portfolio of Jasman Sidhu, a CS student at Oakland University building practical AI products."
     />
     <title>Jasman Sidhu - Portfolio</title>
+    <!-- Dark from the very first frame (the stylesheet arrives later), and never restore an old scroll position:
+         every visit starts at the top with the loader. -->
+    <meta name="color-scheme" content="dark" />
+    <style>
+      html,
+      body {
+        background: #0a0a0a;
+      }
+    </style>
+    <script>
+      history.scrollRestoration = 'manual'
+    </script>
   </head>
   <body>
     <div id="root"></div>

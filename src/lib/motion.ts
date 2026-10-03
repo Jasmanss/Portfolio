@@ -6,6 +6,9 @@ import { SplitText } from 'gsap/SplitText'
 import { ScrambleTextPlugin } from 'gsap/ScrambleTextPlugin'
 
 gsap.registerPlugin(ScrollTrigger, SplitText, ScrambleTextPlugin)
+// ScrollTrigger puts the browser's own scroll memory back after every refresh; keep it off so a reload always
+// starts at the top (with the loader) instead of the browser jumping back down the page mid-load.
+ScrollTrigger.clearScrollMemory('manual')
 
 export const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches

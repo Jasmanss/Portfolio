@@ -16,6 +16,13 @@ export default {
         ash: '#7C7C7C',
         ember: 'rgb(var(--accent) / <alpha-value>)',
       },
+      screens: {
+        // Side-by-side layouts (the opened panels): only on screens that are wide AND landscape, so tablets held
+        // upright get the stacked phone layout instead of two cramped columns.
+        split: { raw: '(min-width: 1024px) and (min-aspect-ratio: 1/1)' },
+        // Big monitors (1800px and wider): type and spacing scale up so content doesn't float in empty space.
+        huge: '1800px',
+      },
       fontFamily: {
         display: ['"Inter Tight Variable"', 'system-ui', 'sans-serif'],
         sans: ['"Inter Tight Variable"', 'system-ui', 'sans-serif'],
