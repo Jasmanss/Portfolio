@@ -18,7 +18,7 @@
     "website"
   ],
   "author": "",
-  "license": "ISC",
+  "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
     "@types/react": "^19.1.11",
     "@types/react-dom": "^19.1.7",

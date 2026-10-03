@@ -1,0 +1,18 @@
+Copyright (c) 2025-2026 Jasman Sidhu. All rights reserved.
+
+This repository is public so people can read it and learn from it. You are welcome to:
+
+- read the code and study how things are built;
+- use general techniques you learn here (for example, how an animation is timed or how a shader dithers an
+  image) in your own work, written your own way.
+
+You may not, without my written permission:
+
+- copy, fork and deploy, or republish this site or any substantial part of it;
+- reproduce its design: the layout, typography, colours, animations and interactions, illustrations, or its
+  overall look and feel;
+- use its content: the text, images, video frames, portrait, resume or project descriptions.
+
+Third-party libraries listed in package.json keep their own licenses.
+
+Questions or permission requests: jasmansidhu974@gmail.com
